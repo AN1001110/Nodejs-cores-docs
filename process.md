@@ -1,134 +1,212 @@
-### process (إدارة العمليات في Node.js)
-**الوصف**:
+# process (إدارة العمليات في Node.js)
+
+## الوصف
 موديول process يوفر واجهة للتعامل مع عملية Node.js الحالية: معلومات النظام، البيئة، إدارة الإنهاء، التعامل مع الإشارات، الأحداث الحرجة، والتحكم في تدفق التنفيذ. يُستخدم في جميع تطبيقات Node.js تقريبًا.
 
 ---
-#### أهم الخصائص والدوال:
 
+## فهرس الخصائص والدوال
+| الخاصية/الدالة | الوصف |
+|---------------|-------|
+| [`process.argv`](#processargv) | وسيطات التشغيل |
+| [`process.env`](#processenv) | متغيرات البيئة |
+| [`process.exit`](#processexitcode) | إنهاء العملية |
+| [`process.cwd`](#processcwd) | المسار الحالي |
+| [`process.chdir`](#processchdirdir) | تغيير المسار الحالي |
+| [`process.pid`/`process.ppid`](#processpid-ppid) | معرف العملية والأب |
+| [`process.platform`/`process.arch`](#processplatform-arch) | منصة النظام والمعمارية |
+| [`process.memoryUsage`](#processmemoryusage) | إحصائيات الذاكرة |
+| [`process.uptime`](#processuptime) | مدة التشغيل |
+| [`process.nextTick`](#processnexttickcallback) | تنفيذ دالة في الدورة التالية |
+| [`process.stdin`/`stdout`/`stderr`](#processstdin-stdout-stderr) | تدفقات الإدخال/الإخراج |
+| [`process.on`](#processonevent-listener) | التعامل مع أحداث العملية |
+
+---
+
+## شرح الخصائص والدوال الأساسية
+
+### process.argv
+- **الوصف**: مصفوفة تحتوي على اسم node، اسم السكريبت، ثم جميع الوسيطات.
+- **مثال:**
 ```js
-// argv: مصفوفة وسيطات التشغيل
 console.log(process.argv); // ["node", "script.js", "arg1", ...]
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processargv)
 
-// env: كائن متغيرات البيئة
+---
+
+### process.env
+- **الوصف**: كائن يمثل متغيرات البيئة.
+- **مثال:**
+```js
 console.log(process.env.PATH); // طباعة متغير PATH
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processenv)
 
-// exit([code]): إنهاء العملية
+---
+
+### process.exit([code])
+- **code**: كود الخروج (افتراضي 0 = نجاح)
+- **الوصف**: ينهي العملية بكود محدد.
+- **مثال:**
+```js
 process.exit(1); // إنهاء مع كود خطأ
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processexitcode)
 
-// cwd(): الحصول على المسار الحالي
+---
+
+### process.cwd()
+- **الوصف**: يرجع المسار الحالي كسلسلة نصية.
+- **مثال:**
+```js
 console.log(process.cwd());
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processcwd)
 
-// chdir(dir): تغيير المسار الحالي
+---
+
+### process.chdir(dir)
+- **dir**: المسار الجديد (String)
+- **الوصف**: يغير المسار الحالي (يرمي خطأ إذا لم يوجد).
+- **مثال:**
+```js
 process.chdir('/tmp');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processchdirdirectory)
 
-// pid, ppid: معرف العملية والأب
+---
+
+### process.pid / process.ppid
+- **الوصف**: أرقام صحيحة لمعرف العملية والأب.
+- **مثال:**
+```js
 console.log(process.pid, process.ppid);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processpid)
 
-// platform, arch: منصة النظام والمعمارية
+---
+
+### process.platform / process.arch
+- **الوصف**: نصوص مثل 'win32', 'linux', 'x64'.
+- **مثال:**
+```js
 console.log(process.platform, process.arch);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processplatform)
 
-// memoryUsage(): إحصائيات الذاكرة
+---
+
+### process.memoryUsage()
+- **الوصف**: كائن بإحصائيات الذاكرة (heap, rss, external).
+- **مثال:**
+```js
 console.log(process.memoryUsage());
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processmemoryusage)
 
-// uptime(): مدة التشغيل بالثواني
+---
+
+### process.uptime()
+- **الوصف**: عدد ثواني التشغيل (Number).
+- **مثال:**
+```js
 console.log(process.uptime());
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processuptime)
 
-// nextTick(callback): تنفيذ دالة في الدورة التالية من الحدث
+---
+
+### process.nextTick(callback)
+- **callback**: دالة تُنفذ في أقرب دورة حدث.
+- **الوصف**: تنفيذ دالة في الدورة التالية من الحدث.
+- **مثال:**
+```js
 process.nextTick(() => console.log('التالي'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processnexttickcallback-args)
 
-// stdin, stdout, stderr: تدفقات الإدخال/الإخراج
+---
+
+### process.stdin / process.stdout / process.stderr
+- **الوصف**: كائنات Stream (للقراءة/الكتابة).
+- **مثال:**
+```js
 process.stdin.on('data', data => console.log('أدخلت:', data.toString()));
 process.stdout.write('مرحبا!\n');
 process.stderr.write('خطأ!\n');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processstdin)
 
-// events: التعامل مع أحداث العملية
+---
+
+### process.on(event, listener)
+- **event**: اسم الحدث (مثل 'exit', 'uncaughtException', 'SIGINT')
+- **listener**: دالة تُنفذ عند وقوع الحدث
+- **الوصف**: التعامل مع أحداث العملية.
+- **مثال:**
+```js
 process.on('exit', code => console.log('انتهت العملية بكود:', code));
 process.on('uncaughtException', err => console.error('خطأ غير معالج:', err));
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/process.html#processoneventname-listener)
 
 ---
-#### شرح البارامترات والقيم:
-- **argv**: مصفوفة (Array) تحتوي على اسم node، اسم السكريبت، ثم جميع الوسيطات.
-- **env**: كائن (Object) يمثل متغيرات البيئة.
-- **exit(code)**: ينهي العملية بكود (افتراضي 0 = نجاح).
-- **cwd()**: يرجع المسار الحالي كسلسلة نصية.
-- **chdir(dir)**: يغير المسار الحالي (يرمي خطأ إذا لم يوجد).
-- **pid/ppid**: أرقام صحيحة (Integer) لمعرف العملية والأب.
-- **platform/arch**: نصوص (String) مثل 'win32', 'linux', 'x64'.
-- **memoryUsage()**: كائن بإحصائيات الذاكرة (heap, rss, external).
-- **uptime()**: عدد ثواني التشغيل (Number).
-- **nextTick(callback)**: دالة تُنفذ في أقرب دورة حدث.
-- **stdin/stdout/stderr**: كائنات Stream (للقراءة/الكتابة).
+
+## حالات الاستخدام الشائعة
+- قراءة وسيطات التشغيل
+- التعامل مع متغيرات البيئة
+- التعامل مع الأحداث الحرجة (exit, uncaughtException, SIGINT)
+- مراقبة استهلاك الذاكرة
+- بناء تطبيقات CLI
 
 ---
-#### أمثلة عملية:
 
-**1. قراءة وسيطات التشغيل:**
-```js
-if (process.argv.includes('--help')) {
-  console.log('طريقة الاستخدام: node app.js [خيارات]');
-  process.exit(0);
-}
-```
+## أفضل الممارسات
+- لا تستخدم process.exit() إلا عند الضرورة القصوى
+- سجل جميع الأخطاء الحرجة (uncaughtException, unhandledRejection)
+- استخدم process.env فقط لقراءة متغيرات البيئة
+- راقب استهلاك الذاكرة والدورات الزمنية في التطبيقات طويلة الأمد
+- استخدم process.nextTick بحذر
+- تحقق من وجود المسار قبل استخدام chdir
 
-**2. التعامل مع متغيرات البيئة:**
-```js
-const env = process.env.NODE_ENV || 'development';
-console.log('بيئة التشغيل:', env);
-```
+---
 
-**3. التعامل مع الأحداث الحرجة:**
+## التحذيرات الأمنية
+- لا تعرض متغيرات البيئة الحساسة في السجلات أو رسائل الخطأ
+- لا تعتمد على platform/arch في منطق حساس بدون اختبار عبر جميع الأنظمة
+- أغلق جميع الموارد قبل استخدام process.exit
+
+---
+
+## أدوات التصحيح المتعلقة
+- [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
+- [why-is-node-running](https://www.npmjs.com/package/why-is-node-running) (لمعرفة سبب استمرار العملية)
+
+---
+
+## اختبار تفاعلي
 ```js
-process.on('uncaughtException', (err) => {
-  console.error('خطأ غير معالج:', err);
-  // سجل الخطأ ثم إنهاء آمن
-  process.exit(1);
+const test = require('node:test');
+const assert = require('node:assert');
+
+test('اختبار argv', () => {
+  assert.ok(Array.isArray(process.argv));
 });
 ```
 
-**4. التعامل مع الإشارات (مثل SIGINT):**
-```js
-process.on('SIGINT', () => {
-  console.log('تم الضغط على Ctrl+C. إنهاء آمن...');
-  process.exit(0);
-});
-```
+---
 
-**5. مراقبة استهلاك الذاكرة:**
-```js
-setInterval(() => {
-  const mem = process.memoryUsage();
-  console.log('الذاكرة المستخدمة:', (mem.rss / 1024 / 1024).toFixed(2), 'MB');
-}, 5000);
-```
+## نصائح الخبراء
+- لا تستخدم process.exit() إلا عند الضرورة القصوى
+- سجل جميع الأخطاء الحرجة في ملف أو خدمة مراقبة
+- راقب استهلاك الذاكرة في التطبيقات طويلة الأمد
+- تحقق من وجود متغيرات البيئة قبل الاعتماد عليها
 
 ---
-#### أخطاء شائعة وحلولها:
-- **نسيان التعامل مع uncaughtException/unhandledRejection:** يؤدي لتعطل التطبيق فجأة. الحل: سجل الأخطاء وانهِ العملية بأمان.
-- **تغيير المسار الحالي لمسار غير موجود:** يسبب خطأ. الحل: تحقق من وجود المسار قبل استخدام chdir.
-- **استخدام process.exit() دون تنظيف الموارد:** قد يؤدي لفقدان بيانات أو ملفات مفتوحة. الحل: أغلق جميع الموارد قبل الخروج.
-- **الاعتماد على متغيرات بيئة غير معرفة:** الحل: استخدم قيمة افتراضية أو تحقق من وجود المتغير.
 
----
-#### نصائح احترافية:
-- **لا تستخدم process.exit() إلا عند الضرورة القصوى**، لأنه ينهي العملية فورًا دون انتظار الأحداث أو إنهاء الاتصالات.
-- **سجل جميع الأخطاء الحرجة** (uncaughtException, unhandledRejection) في ملف أو خدمة مراقبة.
-- **استخدم process.env فقط لقراءة متغيرات البيئة**، ولا تعتمد على وجودها دائمًا في جميع البيئات.
-- **راقب استهلاك الذاكرة والدورات الزمنية** في التطبيقات طويلة الأمد.
-- **استخدم process.nextTick بحذر**: الإفراط في استخدامه قد يؤدي إلى جمود (starvation) في حلقة الأحداث.
-- **عند التعامل مع stdin في تطبيقات CLI**، تأكد من وضع stdin في الوضع المناسب (raw, encoding).
-- **لا تعتمد على platform/arch في منطق حساس** بدون اختبار عبر جميع الأنظمة المستهدفة.
-
----
-#### ملاحظات تقنية:
-- **الأحداث الحرجة:**
-  - 'exit': يُطلق عند إنهاء العملية (لا يمكن تنفيذ عمليات async هنا).
-  - 'uncaughtException': لالتقاط الأخطاء غير المعالجة (استخدمه فقط للتسجيل ثم إنهاء العملية).
-  - 'SIGINT', 'SIGTERM': لالتقاط إشارات النظام (مفيدة للإغلاق الآمن).
-- **الذاكرة:** استخدم process.memoryUsage لمراقبة التسريبات.
-- **الأداء:** استخدم process.hrtime لقياس الزمن بدقة نانوية.
-- **الأمان:** لا تعرض متغيرات البيئة الحساسة في السجلات أو رسائل الخطأ.
-
----
-#### مصادر:
-- [توثيق Node.js الرسمي - process](https://nodejs.org/docs/latest/api/process.html) 
+## ملاحظات تقنية
+- الأحداث الحرجة: 'exit', 'uncaughtException', 'SIGINT', 'SIGTERM'
+- استخدم process.memoryUsage لمراقبة التسريبات
+- استخدم process.hrtime لقياس الزمن بدقة نانوية
+- راجع [توثيق Node.js الرسمي - process](https://nodejs.org/docs/latest/api/process.html) لأي تحديثات 

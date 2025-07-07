@@ -1,116 +1,184 @@
-### url (معالجة الروابط في Node.js)
-**الوصف**:
+# url (معالجة الروابط في Node.js)
+
+## الوصف
 موديول url يوفر أدوات لتحليل، بناء، وتنسيق الروابط (URLs) في Node.js. يدعم معيار WHATWG الحديث وواجهة API قديمة (Legacy). يُستخدم بكثرة في تطبيقات الويب، التعامل مع REST APIs، معالجة الروابط الديناميكية، وتحويل المسارات.
 
 ---
-#### أهم الكلاسات والدوال:
 
+## فهرس الكلاسات والدوال
+| الكلاس/الدالة | الوصف |
+|---------------|-------|
+| [`URL`](#url) | كلاس WHATWG URL الحديث |
+| [`URLSearchParams`](#urlsearchparams) | إدارة بارامترات الاستعلام |
+| [`url.parse`](#urlparseurlstring-parsequerystring-slashesdenotehost) | تحليل رابط (قديم) |
+| [`url.format`](#urlformaturlobject-options) | تنسيق كائن URL إلى نص (قديم) |
+| [`url.pathToFileURL`](#urlpathtofileurlpath) | تحويل مسار إلى رابط file:// |
+| [`url.fileURLToPath`](#urlfileurltopathurl) | تحويل رابط file:// إلى مسار |
+| [`url.domainToASCII`](#urldomaintoasciidomain) | تحويل دومين Unicode إلى ASCII |
+| [`url.domainToUnicode`](#urldomaintounicodedomain) | تحويل دومين ASCII إلى Unicode |
+
+---
+
+## شرح الكلاسات والدوال الأساسية
+
+### URL(input[, base])
+- **input**: نص الرابط (String)
+- **base**: رابط أساسي (اختياري) لحل الروابط النسبية
+- **الوصف**: كلاس WHATWG الحديث لتحليل وبناء الروابط.
+- **مثال:**
 ```js
-// استيراد الموديول
-const url = require('node:url');
-
-// WHATWG URL API (الموصى بها)
 const myURL = new URL('https://user:pass@nodejs.org:8080/docs?x=1#top');
 console.log(myURL.hostname); // nodejs.org
 console.log(myURL.searchParams.get('x')); // 1
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#class-url)
 
-// Legacy API (قديمة)
-const parsed = url.parse('https://nodejs.org/docs?x=1#top');
-console.log(parsed.hostname); // nodejs.org
+---
 
-// تنسيق كائن URL إلى نص
-console.log(url.format(myURL));
-
-// تحويل مسار إلى رابط file://
-console.log(url.pathToFileURL('/tmp/test.txt').href);
-
-// تحويل رابط file:// إلى مسار
-console.log(url.fileURLToPath('file:///tmp/test.txt'));
-
-// domainToASCII/domainToUnicode: دعم IDN
-console.log(url.domainToASCII('مثال.إختبار'));
-console.log(url.domainToUnicode('xn--mgbh0fb.xn--kgbechtv'));
-
-// URLSearchParams: إدارة بارامترات الاستعلام
+### URLSearchParams(init)
+- **init**: نص أو كائن أو مصفوفة بارامترات الاستعلام
+- **الوصف**: إدارة بارامترات الاستعلام بسهولة وأمان.
+- **مثال:**
+```js
 const params = new URLSearchParams('a=1&b=2');
 params.append('c', '3');
 console.log(params.toString()); // a=1&b=2&c=3
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#class-urlsearchparams)
 
 ---
-#### شرح البارامترات والقيم:
-- **input**: نص الرابط (String).
-- **base**: رابط أساسي (اختياري) لحل الروابط النسبية.
-- **urlObject**: كائن URL أو كائن قديم (Legacy).
-- **options**: خيارات إضافية لبعض الدوال.
-- **name/value**: اسم وقيمة بارامتر الاستعلام.
+
+### url.parse(urlString[, parseQueryString, slashesDenoteHost])
+- **urlString**: نص الرابط
+- **parseQueryString**: هل يتم تحليل بارامترات الاستعلام؟ (اختياري)
+- **slashesDenoteHost**: هل // تعني بداية المضيف؟ (اختياري)
+- **الوصف**: تحليل رابط إلى كائن (واجهة قديمة - Legacy).
+- **مثال:**
+```js
+const url = require('node:url');
+const parsed = url.parse('https://nodejs.org/docs?x=1#top');
+console.log(parsed.hostname); // nodejs.org
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost)
 
 ---
-#### أمثلة عملية:
 
-**1. استخراج معلومات من رابط:**
+### url.format(urlObject[, options])
+- **urlObject**: كائن URL أو كائن قديم (Legacy)
+- **options**: خيارات إضافية (اختياري)
+- **الوصف**: تنسيق كائن URL إلى نص (واجهة قديمة - Legacy).
+- **مثال:**
 ```js
-const { URL } = require('node:url');
-const u = new URL('https://example.com:8080/path?foo=bar#hash');
-console.log(u.protocol); // https:
-console.log(u.host);     // example.com:8080
-console.log(u.pathname); // /path
-console.log(u.search);   // ?foo=bar
-console.log(u.hash);     // #hash
+const url = require('node:url');
+const myURL = new URL('https://nodejs.org/docs?x=1#top');
+console.log(url.format(myURL));
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_format_urlobject_options)
 
-**2. بناء رابط ديناميكي:**
+---
+
+### url.pathToFileURL(path)
+- **path**: مسار الملف (String)
+- **الوصف**: تحويل مسار إلى رابط file://
+- **مثال:**
 ```js
-const u = new URL('https://api.example.com/');
-u.pathname = '/v1/users';
-u.searchParams.set('id', 123);
-console.log(u.toString()); // https://api.example.com/v1/users?id=123
+const { pathToFileURL } = require('node:url');
+console.log(pathToFileURL('/tmp/test.txt').href); // file:///tmp/test.txt
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_pathtofileurl_path)
 
-**3. التعامل مع بارامترات الاستعلام:**
-```js
-const params = new URLSearchParams('a=1&b=2');
-params.append('c', '3');
-params.delete('a');
-console.log(params.get('b')); // 2
-console.log(params.toString()); // b=2&c=3
-```
+---
 
-**4. تحويل مسار إلى رابط والعكس:**
+### url.fileURLToPath(url)
+- **url**: رابط file:// أو كائن URL
+- **الوصف**: تحويل رابط file:// إلى مسار نظام الملفات.
+- **مثال:**
 ```js
-const { pathToFileURL, fileURLToPath } = require('node:url');
+const { fileURLToPath, pathToFileURL } = require('node:url');
 const fileUrl = pathToFileURL('/tmp/test.txt');
-console.log(fileUrl.href); // file:///tmp/test.txt
 console.log(fileURLToPath(fileUrl)); // /tmp/test.txt
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_fileurltopath_url)
 
 ---
-#### أخطاء شائعة وحلولها:
-- **استخدام API قديمة (url.parse, url.format) مع روابط حديثة:** قد ينتج سلوك غير متوقع مع Unicode أو روابط غير قياسية. الحل: استخدم WHATWG URL API دائمًا.
-- **نسيان تحديد base عند تحليل روابط نسبية:** يؤدي لخطأ. الحل: مرر base عند استخدام new URL مع روابط نسبية.
-- **نسيان ترميز القيم يدويًا:** WHATWG API تتكفل بالترميز تلقائيًا، لكن مع Legacy API يجب الانتباه.
-- **تمرير كائن غير نصي إلى URL:** يجب تحويله إلى نص أولاً.
+
+### url.domainToASCII(domain)
+- **domain**: نص الدومين (قد يحتوي Unicode)
+- **الوصف**: تحويل دومين Unicode إلى ASCII (IDN)
+- **مثال:**
+```js
+const { domainToASCII } = require('node:url');
+console.log(domainToASCII('مثال.إختبار'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_domaintoascii_domain)
 
 ---
-#### نصائح احترافية:
-- **استخدم WHATWG URL API دائمًا** (new URL, URLSearchParams) فهي أكثر أمانًا ودقة وتدعم Unicode بشكل أفضل.
-- **تجنب استخدام url.parse وurl.format** إلا للتوافق مع كود قديم.
-- **استخدم URLSearchParams لإدارة بارامترات الاستعلام** بدل التلاعب اليدوي بالنصوص.
-- **عند التعامل مع روابط ملفات محلية**، استخدم pathToFileURL وfileURLToPath لضمان التوافق بين الأنظمة.
-- **تحقق من صحة الروابط قبل استخدامها** في العمليات الحساسة (تنزيل، رفع، إلخ).
+
+### url.domainToUnicode(domain)
+- **domain**: نص الدومين (ASCII)
+- **الوصف**: تحويل دومين ASCII إلى Unicode
+- **مثال:**
+```js
+const { domainToUnicode } = require('node:url');
+console.log(domainToUnicode('xn--mgbh0fb.xn--kgbechtv'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_domaintounicode_domain)
 
 ---
-#### بدائل حديثة:
-- **مكتبة whatwg-url**: نفس معيار WHATWG وتستخدم داخليًا في Node.js.
-- **مكتبة qs**: لإدارة بارامترات الاستعلام بشكل متقدم في تطبيقات الويب.
+
+## حالات الاستخدام الشائعة
+- استخراج معلومات من رابط (protocol, host, pathname, search, hash)
+- بناء روابط ديناميكية في تطبيقات REST APIs
+- إدارة بارامترات الاستعلام بسهولة
+- تحويل المسارات المحلية إلى روابط والعكس
+- دعم الروابط الدولية (IDN/Unicode)
 
 ---
-#### ملاحظات تقنية:
-- **WHATWG URL API** هي الافتراضية في Node.js منذ الإصدار 10+.
-- **دعم Unicode وIDN** أفضل بكثير في WHATWG API.
-- **الترميز التلقائي** للقيم في URLSearchParams يمنع أخطاء شائعة في الروابط.
-- **التوافق**: معظم مكتبات الويب الحديثة تعتمد WHATWG URL API.
+
+## أفضل الممارسات
+- استخدم WHATWG URL API دائمًا (new URL, URLSearchParams)
+- تجنب استخدام url.parse وurl.format إلا للتوافق مع كود قديم
+- استخدم URLSearchParams لإدارة بارامترات الاستعلام
+- استخدم pathToFileURL وfileURLToPath مع روابط الملفات المحلية
+- تحقق من صحة الروابط قبل استخدامها في العمليات الحساسة
 
 ---
-#### مصادر:
-- [توثيق Node.js الرسمي - url](https://nodejs.org/docs/latest/api/url.html) 
+
+## التحذيرات الأمنية
+- لا تثق في الروابط القادمة من المستخدمين، تحقق منها قبل استخدامها
+- انتبه للترميز التلقائي في WHATWG API (قد يغير شكل الرابط)
+
+---
+
+## أدوات التصحيح المتعلقة
+- [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
+- [valid-url](https://www.npmjs.com/package/valid-url) (للتحقق من صحة الروابط)
+
+---
+
+## اختبار تفاعلي
+```js
+const test = require('node:test');
+const assert = require('node:assert');
+const { URL } = require('node:url');
+
+test('اختبار URLSearchParams', () => {
+  const params = new URLSearchParams('a=1&b=2');
+  params.append('c', '3');
+  assert.strictEqual(params.toString(), 'a=1&b=2&c=3');
+});
+```
+
+---
+
+## نصائح الخبراء
+- استخدم WHATWG API دائمًا لدعم Unicode والأمان
+- استخدم URLSearchParams بدل التلاعب اليدوي بالنصوص
+- تحقق من base عند تحليل روابط نسبية
+
+---
+
+## ملاحظات تقنية
+- WHATWG URL API هي الافتراضية في Node.js منذ الإصدار 10+
+- الترميز التلقائي في URLSearchParams يمنع أخطاء شائعة
+- راجع [توثيق Node.js الرسمي - url](https://nodejs.org/docs/latest/api/url.html) لأي تحديثات 

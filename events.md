@@ -1,110 +1,196 @@
-### events (إدارة الأحداث في Node.js)
-**الوصف**:
+# events (إدارة الأحداث في Node.js)
+
+## الوصف
 موديول events يوفر واجهة لإنشاء وإدارة الأحداث (EventEmitter)، وهو أساس نظام الأحداث في Node.js. يُستخدم في بناء تطبيقات تعتمد على الأحداث مثل الخوادم، التعامل مع البيانات المتدفقة، والتكامل مع مكتبات الطرف الثالث.
 
 ---
-#### أهم الكلاسات والدوال:
 
+## فهرس الكلاسات والدوال
+| الكلاس/الدالة | الوصف |
+|---------------|-------|
+| [`EventEmitter`](#eventemitter) | الكلاس الأساسي لإدارة الأحداث |
+| [`on`](#on) | إضافة مستمع لحدث |
+| [`once`](#once) | مستمع لمرة واحدة |
+| [`emit`](#emit) | إطلاق حدث |
+| [`removeListener`/`off`](#removelisteneroff) | إزالة مستمع |
+| [`removeAllListeners`](#removealllisteners) | إزالة جميع المستمعين |
+| [`listeners`](#listeners) | جلب جميع المستمعين |
+| [`eventNames`](#eventnames) | جلب جميع أسماء الأحداث |
+| [`setMaxListeners`](#setmaxlisteners) | تحديد الحد الأقصى للمستمعين |
+| [`getMaxListeners`](#getmaxlisteners) | جلب الحد الأقصى الحالي |
+
+---
+
+## شرح الكلاسات والدوال الأساسية
+
+### EventEmitter
+- **الوصف**: الكلاس الأساسي لإنشاء كائنات تدعم الأحداث.
+- **مثال:**
 ```js
 const EventEmitter = require('events');
-
-// إنشاء كائن أحداث
 const emitter = new EventEmitter();
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#class-eventemitter)
 
-// on(event, listener): إضافة مستمع
+---
+
+### on(event, listener)
+- **event**: اسم الحدث (String)
+- **listener**: دالة تُنفذ عند إطلاق الحدث
+- **الوصف**: إضافة مستمع دائم لحدث معين.
+- **مثال:**
+```js
 emitter.on('data', (msg) => console.log('وصلت رسالة:', msg));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteroneventname-listener)
 
-// emit(event, ...args): إطلاق حدث
-emitter.emit('data', 'مرحبا بالعالم');
+---
 
-// once(event, listener): مستمع لمرة واحدة فقط
+### once(event, listener)
+- **event**: اسم الحدث
+- **listener**: دالة تُنفذ مرة واحدة فقط
+- **الوصف**: إضافة مستمع يُنفذ لمرة واحدة فقط عند إطلاق الحدث.
+- **مثال:**
+```js
 emitter.once('init', () => console.log('تهيئة لمرة واحدة'));
-emitter.emit('init'); // سيتم التنفيذ مرة واحدة فقط
+emitter.emit('init');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteronceeventname-listener)
 
-// removeListener(event, listener) أو off(event, listener): إزالة مستمع
+---
+
+### emit(event, ...args)
+- **event**: اسم الحدث
+- **...args**: بيانات إضافية تُمرر للمستمعين
+- **الوصف**: إطلاق حدث وتنفيذ جميع المستمعين المسجلين له.
+- **مثال:**
+```js
+emitter.emit('data', 'مرحبا بالعالم');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteremiteventname-args)
+
+---
+
+### removeListener(event, listener) / off(event, listener)
+- **event**: اسم الحدث
+- **listener**: الدالة المراد إزالتها
+- **الوصف**: إزالة مستمع معين من حدث.
+- **مثال:**
+```js
 function handler() { console.log('تم الحذف'); }
 emitter.on('remove', handler);
 emitter.off('remove', handler);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteroffeventname-listener)
 
-// removeAllListeners([event]): إزالة جميع المستمعين
+---
+
+### removeAllListeners([event])
+- **event**: اسم الحدث (اختياري)
+- **الوصف**: إزالة جميع المستمعين لحدث معين أو لكل الأحداث.
+- **مثال:**
+```js
 emitter.removeAllListeners('data');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitterremovealllistenerseventname)
 
-// listeners(event): جلب جميع المستمعين لحدث معين
+---
+
+### listeners(event)
+- **event**: اسم الحدث
+- **الوصف**: جلب جميع المستمعين لحدث معين.
+- **مثال:**
+```js
 console.log(emitter.listeners('data'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitterlistenerseventname)
 
-// eventNames(): جلب جميع أسماء الأحداث المسجلة
+---
+
+### eventNames()
+- **الوصف**: جلب جميع أسماء الأحداث المسجلة.
+- **مثال:**
+```js
 console.log(emitter.eventNames());
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittereventnames)
 
-// setMaxListeners(n): تحديد الحد الأقصى للمستمعين
+---
+
+### setMaxListeners(n)
+- **n**: عدد صحيح (Integer) للحد الأقصى للمستمعين
+- **الوصف**: تحديد الحد الأقصى لعدد المستمعين لكل حدث.
+- **مثال:**
+```js
 emitter.setMaxListeners(20);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittersetmaxlistenersn)
 
-// getMaxListeners(): جلب الحد الأقصى الحالي
+---
+
+### getMaxListeners()
+- **الوصف**: جلب الحد الأقصى الحالي للمستمعين.
+- **مثال:**
+```js
 console.log(emitter.getMaxListeners());
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittergetmaxlisteners)
 
 ---
-#### شرح البارامترات والقيم:
-- **event**: اسم الحدث (String).
-- **listener**: دالة تُنفذ عند إطلاق الحدث.
-- **...args**: أي بيانات إضافية تُمرر للمستمع.
-- **n**: عدد صحيح (Integer) للحد الأقصى للمستمعين.
+
+## حالات الاستخدام الشائعة
+- بناء أنظمة إشعارات أو مراقبة
+- التعامل مع تدفقات البيانات (stream)
+- إدارة الأحداث في الخوادم أو تطبيقات الويب
+- التكامل مع مكتبات تعتمد الأحداث
 
 ---
-#### أمثلة عملية:
 
-**1. بناء نظام إشعارات بسيط:**
+## أفضل الممارسات
+- راقب عدد المستمعين واستخدم setMaxListeners عند الحاجة
+- أضف دائمًا مستمع لحدث 'error' لتجنب انهيار التطبيق
+- أزل المستمعين غير الضروريين لتقليل استهلاك الذاكرة
+- استخدم once للأحداث التي تحدث مرة واحدة فقط
+
+---
+
+## التحذيرات الأمنية
+- لا تعتمد على الأحداث لنقل بيانات حساسة بين أجزاء غير موثوقة
+- تعامل مع الأخطاء دائمًا في مستمع 'error'
+
+---
+
+## أدوات التصحيح المتعلقة
+- [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
+- [eventemitter3](https://www.npmjs.com/package/eventemitter3) (بديل خفيف وسريع)
+
+---
+
+## اختبار تفاعلي
 ```js
+const test = require('node:test');
+const assert = require('node:assert');
 const EventEmitter = require('events');
-class Notifier extends EventEmitter {}
-const notifier = new Notifier();
-notifier.on('notify', (msg) => console.log('إشعار:', msg));
-notifier.emit('notify', 'تمت العملية بنجاح!');
-```
 
-**2. التعامل مع الأخطاء:**
-```js
-emitter.on('error', (err) => {
-  console.error('حدث خطأ:', err);
+test('اختبار on/emit', () => {
+  const emitter = new EventEmitter();
+  let result = '';
+  emitter.on('msg', (txt) => { result = txt; });
+  emitter.emit('msg', 'ok');
+  assert.strictEqual(result, 'ok');
 });
-emitter.emit('error', new Error('فشل في الاتصال'));
-```
-
-**3. مستمع لمرة واحدة:**
-```js
-emitter.once('ready', () => console.log('جاهز للعمل!'));
-emitter.emit('ready'); // سيتم التنفيذ مرة واحدة فقط
-emitter.emit('ready'); // لن يتم التنفيذ
-```
-
-**4. منع تسرب الذاكرة (Memory Leak):**
-```js
-// إذا أضفت أكثر من 10 مستمعين لنفس الحدث، سيظهر تحذير
-emitter.setMaxListeners(50); // زد الحد إذا كان ذلك مقصودًا
 ```
 
 ---
-#### أخطاء شائعة وحلولها:
-- **تسرب الذاكرة بسبب كثرة المستمعين:** إذا أضفت مستمعين كثيرين دون إزالة غير الضروريين، سيظهر تحذير (MaxListenersExceededWarning). الحل: استخدم removeListener أو removeAllListeners عند عدم الحاجة.
-- **نسيان التعامل مع حدث 'error':** إذا تم إطلاق حدث 'error' بدون مستمع، ستنهار العملية. الحل: أضف دائمًا مستمع لحدث 'error'.
-- **استخدام once بدل on أو العكس:** استخدم once للأحداث التي يجب أن تُعالج مرة واحدة فقط.
-- **نسيان إزالة المستمعين في الكائنات المؤقتة:** يؤدي لتسرب الذاكرة. الحل: أزل المستمعين عند الانتهاء.
+
+## نصائح الخبراء
+- راقب عدد المستمعين لتجنب تسرب الذاكرة
+- استخدم once للأحداث التي تحدث مرة واحدة فقط
+- استخدم eventNames و listeners لمراقبة حالة الأحداث
 
 ---
-#### نصائح احترافية:
-- **راقب عدد المستمعين:** إذا احتجت أكثر من 10 مستمعين، زد الحد بوضوح (setMaxListeners) أو راجع منطق التطبيق.
-- **سجل جميع الأخطاء في مستمع 'error'** ولا تتركه فارغًا.
-- **استخدم removeListener أو off** لإزالة المستمعين غير الضروريين لتقليل استهلاك الذاكرة.
-- **استخدم once للأحداث التي تحدث مرة واحدة فقط** (تهيئة، إغلاق، إلخ).
-- **تجنب تمرير كائنات ضخمة عبر الأحداث** لتقليل استهلاك الذاكرة.
-- **استخدم eventNames و listeners** لمراقبة حالة الأحداث ديناميكيًا.
 
----
-#### ملاحظات تقنية:
-- **تسرب الذاكرة:** يحدث غالبًا عند إضافة مستمعين دون إزالة، خاصة في التطبيقات طويلة الأمد أو عند إنشاء كائنات EventEmitter مؤقتة.
-- **الأداء:** إطلاق الأحداث (emit) سريع جدًا، لكن المستمعين الكُثر قد يؤثرون على الأداء.
-- **الأمان:** لا تعتمد على الأحداث لنقل بيانات حساسة بين أجزاء غير موثوقة من التطبيق.
-- **التوافق:** معظم مكتبات Node.js (مثل http, stream) ترث من EventEmitter.
-
----
-#### مصادر:
-- [توثيق Node.js الرسمي - events](https://nodejs.org/docs/latest/api/events.html) 
+## ملاحظات تقنية
+- معظم مكتبات Node.js (مثل http, stream) ترث من EventEmitter
+- إطلاق الأحداث (emit) سريع جدًا لكن المستمعين الكُثر قد يؤثرون على الأداء
+- راجع [توثيق Node.js الرسمي - events](https://nodejs.org/docs/latest/api/events.html) لأي تحديثات 

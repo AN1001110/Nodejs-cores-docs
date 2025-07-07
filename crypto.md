@@ -1,163 +1,287 @@
-### crypto (التشفير والتجزئة في Node.js)
-**الوصف**:
+# crypto (التشفير والتجزئة في Node.js)
+
+## الوصف
 موديول crypto يوفر وظائف تشفير وتجزئة قوية في Node.js، مثل توليد القيم العشوائية، التحقق من سلامة البيانات، تشفير/فك تشفير، توقيع رقمي، وتوليد مفاتيح. يُستخدم في حماية كلمات المرور، التحقق من الهوية، تشفير البيانات، وبناء بروتوكولات آمنة.
 
-#### جميع الدوال غير المهملة:
+---
 
-```javascript
-// توليد بايتات عشوائية آمنة
-crypto.randomBytes(size[, callback])
-// البارامترس:
-// - size: (integer) عدد البايتات المطلوبة
-// - callback: (function) دالة تُستدعى بعد التوليد: function(err, buffer)
-// مثال:
+## فهرس الدوال والكلاسات
+| الدالة/الكلاس | الوصف |
+|---------------|-------|
+| [`crypto.randomBytes`](#cryptorandombytessize-callback) | توليد بايتات عشوائية آمنة |
+| [`crypto.randomInt`](#cryptorandomintmin-max-callback) | توليد رقم عشوائي آمن |
+| [`crypto.randomUUID`](#cryptorandomuuidoptions) | توليد UUID v4 عشوائي |
+| [`crypto.createHash`](#cryptocreatehashalgorithm) | إنشاء كائن تجزئة |
+| [`crypto.createHmac`](#cryptocreatehmacalgorithm-key) | إنشاء كائن HMAC |
+| [`crypto.createCipheriv`](#cryptocreatecipherivalgorithm-key-iv) | تشفير البيانات |
+| [`crypto.createDecipheriv`](#cryptocreatedecipherivalgorithm-key-iv) | فك التشفير |
+| [`crypto.pbkdf2`](#cryptopbkdf2password-salt-iterations-keylen-digest-callback) | توليد مفتاح مشتق (PBKDF2) |
+| [`crypto.scrypt`](#cryptoscryptpassword-salt-keylen-options-callback) | توليد مفتاح مشتق (scrypt) |
+| [`crypto.verify`](#cryptoverifyalgorithm-data-key-signature) | التحقق من صحة التوقيع الرقمي |
+| [`crypto.sign`](#cryptosignalorithm-data-key) | توقيع البيانات رقمياً |
+| [`crypto.timingSafeEqual`](#cryptotimingsafeequala-b) | مقارنة آمنة بين بافرين |
+| [`crypto.getHashes`](#cryptogethashes) | قائمة خوارزميات التجزئة |
+| [`crypto.getCiphers`](#cryptogetciphers) | قائمة خوارزميات التشفير |
+
+---
+
+## شرح الدوال والكلاسات الأساسية
+
+### crypto.randomBytes(size[, callback])
+- **size**: عدد البايتات المطلوبة (Integer)
+- **callback**: دالة تُستدعى بعد التوليد (اختياري)
+- **الوصف**: توليد بايتات عشوائية آمنة.
+- **مثال:**
+```js
 const crypto = require('node:crypto');
 crypto.randomBytes(16, (err, buf) => {
   if (err) throw err;
   console.log('Token:', buf.toString('hex'));
 });
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptorandombytessize-callback)
 
-// توليد رقم عشوائي آمن
-crypto.randomInt([min, ]max[, callback])
-// البارامترس:
-// - min: (integer) الحد الأدنى (افتراضي 0)
-// - max: (integer) الحد الأعلى (حصري)
-// - callback: (function) دالة تُستدعى بعد التوليد: function(err, n)
-// مثال:
+---
+
+### crypto.randomInt([min, ]max[, callback])
+- **min**: الحد الأدنى (افتراضي 0)
+- **max**: الحد الأعلى (حصري)
+- **callback**: دالة تُستدعى بعد التوليد (اختياري)
+- **الوصف**: توليد رقم عشوائي آمن.
+- **مثال:**
+```js
 crypto.randomInt(1, 100, (err, n) => {
   if (err) throw err;
   console.log('Random:', n);
 });
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptorandomintmin-max-callback)
 
-// توليد UUID v4 عشوائي
-crypto.randomUUID([options])
-// البارامترس:
-// - options: (object) خيارات إضافية (نادراً ما تُستخدم)
-// مثال:
+---
+
+### crypto.randomUUID([options])
+- **options**: خيارات إضافية (نادراً ما تُستخدم)
+- **الوصف**: توليد UUID v4 عشوائي.
+- **مثال:**
+```js
 const uuid = crypto.randomUUID();
 console.log('UUID:', uuid);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptorandomuuidoptions)
 
-// دوال التجزئة (Hash)
-crypto.createHash(algorithm)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية ('sha256', 'md5', ...)
-// مثال:
+---
+
+### crypto.createHash(algorithm)
+- **algorithm**: اسم الخوارزمية ('sha256', 'md5', ...)
+- **الوصف**: إنشاء كائن تجزئة (Hash).
+- **مثال:**
+```js
 const hash = crypto.createHash('sha256').update('secret').digest('hex');
 console.log('Hash:', hash);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptocreatehashalgorithm-options)
 
-// دوال HMAC (توقيع تجزئة)
-crypto.createHmac(algorithm, key)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية
-// - key: (string | Buffer) المفتاح السري
-// مثال:
+---
+
+### crypto.createHmac(algorithm, key)
+- **algorithm**: اسم الخوارزمية
+- **key**: المفتاح السري (String | Buffer)
+- **الوصف**: إنشاء كائن HMAC (توقيع تجزئة).
+- **مثال:**
+```js
 const hmac = crypto.createHmac('sha256', 'key').update('data').digest('hex');
 console.log('HMAC:', hmac);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptocreatehmacalgorithm-key-options)
 
-// تشفير البيانات
-crypto.createCipheriv(algorithm, key, iv)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية (مثل 'aes-256-cbc')
-// - key: (Buffer | string) مفتاح التشفير
-// - iv: (Buffer | string) متجه التهيئة (Initialization Vector)
-// مثال:
+---
+
+### crypto.createCipheriv(algorithm, key, iv)
+- **algorithm**: اسم الخوارزمية (مثل 'aes-256-cbc')
+- **key**: مفتاح التشفير (Buffer | string)
+- **iv**: متجه التهيئة (Buffer | string)
+- **الوصف**: تشفير البيانات باستخدام خوارزمية متماثلة.
+- **مثال:**
+```js
 const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 let encrypted = cipher.update('secret', 'utf8', 'hex');
 encrypted += cipher.final('hex');
 console.log('Encrypted:', encrypted);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptocreatecipherivalgorithm-key-iv-options)
 
-// فك التشفير
-crypto.createDecipheriv(algorithm, key, iv)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية
-// - key: (Buffer | string) مفتاح التشفير
-// - iv: (Buffer | string) متجه التهيئة
-// مثال:
+---
+
+### crypto.createDecipheriv(algorithm, key, iv)
+- **algorithm**: اسم الخوارزمية
+- **key**: مفتاح التشفير (Buffer | string)
+- **iv**: متجه التهيئة (Buffer | string)
+- **الوصف**: فك تشفير البيانات المشفرة.
+- **مثال:**
+```js
 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
 let decrypted = decipher.update(encrypted, 'hex', 'utf8');
 decrypted += decipher.final('utf8');
 console.log('Decrypted:', decrypted);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptocreatedecipherivalgorithm-key-iv-options)
 
-// توليد مفتاح مشتق من كلمة مرور (PBKDF2)
-crypto.pbkdf2(password, salt, iterations, keylen, digest, callback)
-// البارامترس:
-// - password: (string | Buffer) كلمة المرور
-// - salt: (string | Buffer) ملح التشفير
-// - iterations: (integer) عدد التكرارات
-// - keylen: (integer) طول المفتاح الناتج
-// - digest: (string) خوارزمية التجزئة
-// - callback: (function) دالة تُستدعى بعد التوليد: function(err, derivedKey)
-// مثال:
+---
+
+### crypto.pbkdf2(password, salt, iterations, keylen, digest, callback)
+- **password**: كلمة المرور (String | Buffer)
+- **salt**: ملح التشفير (String | Buffer)
+- **iterations**: عدد التكرارات (Integer)
+- **keylen**: طول المفتاح الناتج (Integer)
+- **digest**: خوارزمية التجزئة (String)
+- **callback**: دالة تُستدعى بعد التوليد
+- **الوصف**: توليد مفتاح مشتق من كلمة مرور باستخدام PBKDF2.
+- **مثال:**
+```js
 crypto.pbkdf2('password', 'salt', 100000, 32, 'sha256', (err, key) => {
   if (err) throw err;
   console.log('Derived key:', key.toString('hex'));
 });
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptopbkdf2password-salt-iterations-keylen-digest-callback)
 
-// توليد مفتاح مشتق من كلمة مرور (scrypt)
-crypto.scrypt(password, salt, keylen[, options], callback)
-// البارامترس:
-// - password: (string | Buffer) كلمة المرور
-// - salt: (string | Buffer) ملح التشفير
-// - keylen: (integer) طول المفتاح الناتج
-// - options: (object) خيارات إضافية
-// - callback: (function) دالة تُستدعى بعد التوليد: function(err, derivedKey)
-// مثال:
+---
+
+### crypto.scrypt(password, salt, keylen[, options], callback)
+- **password**: كلمة المرور (String | Buffer)
+- **salt**: ملح التشفير (String | Buffer)
+- **keylen**: طول المفتاح الناتج (Integer)
+- **options**: خيارات إضافية (Object)
+- **callback**: دالة تُستدعى بعد التوليد
+- **الوصف**: توليد مفتاح مشتق من كلمة مرور باستخدام scrypt.
+- **مثال:**
+```js
 crypto.scrypt('password', 'salt', 32, (err, key) => {
   if (err) throw err;
   console.log('Scrypt key:', key.toString('hex'));
 });
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptoscryptpassword-salt-keylen-options-callback)
 
-// التحقق من صحة التوقيع الرقمي
-crypto.verify(algorithm, data, key, signature)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية
-// - data: (Buffer | string | object) البيانات
-// - key: (object | string | Buffer) المفتاح العام
-// - signature: (Buffer | string) التوقيع
-// مثال:
+---
+
+### crypto.verify(algorithm, data, key, signature)
+- **algorithm**: اسم الخوارزمية
+- **data**: البيانات (Buffer | string | object)
+- **key**: المفتاح العام (Object | String | Buffer)
+- **signature**: التوقيع (Buffer | String)
+- **الوصف**: التحقق من صحة التوقيع الرقمي.
+- **مثال:**
+```js
 const isValid = crypto.verify('sha256', Buffer.from('data'), publicKey, signature);
 console.log('Valid:', isValid);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptoverifyalgorithm-data-key-signature)
 
-// توقيع البيانات رقمياً
-crypto.sign(algorithm, data, key)
-// البارامترس:
-// - algorithm: (string) اسم الخوارزمية
-// - data: (Buffer | string | object) البيانات
-// - key: (object | string | Buffer) المفتاح الخاص
-// مثال:
+---
+
+### crypto.sign(algorithm, data, key)
+- **algorithm**: اسم الخوارزمية
+- **data**: البيانات (Buffer | string | object)
+- **key**: المفتاح الخاص (Object | String | Buffer)
+- **الوصف**: توقيع البيانات رقمياً.
+- **مثال:**
+```js
 const signature = crypto.sign('sha256', Buffer.from('data'), privateKey);
 console.log('Signature:', signature.toString('hex'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptosignalorithm-data-key)
 
-// مقارنة آمنة بين بافرين (لمنع هجمات التوقيت)
-crypto.timingSafeEqual(a, b)
-// البارامترس:
-// - a, b: (Buffer) البافرين للمقارنة
-// مثال:
+---
+
+### crypto.timingSafeEqual(a, b)
+- **a, b**: البافرين للمقارنة (Buffer)
+- **الوصف**: مقارنة آمنة بين بافرين لمنع هجمات التوقيت.
+- **مثال:**
+```js
 const isEqual = crypto.timingSafeEqual(Buffer.from('a'), Buffer.from('a'));
 console.log('Equal:', isEqual);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptotimingsafeequala-b)
 
-// الحصول على قائمة الخوارزميات المدعومة
-crypto.getHashes()
-// مثال:
+---
+
+### crypto.getHashes()
+- **الوصف**: الحصول على قائمة الخوارزميات المدعومة للتجزئة.
+- **مثال:**
+```js
 console.log('Available hashes:', crypto.getHashes());
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptogethashes)
 
-// الحصول على قائمة خوارزميات التشفير المدعومة
-crypto.getCiphers()
-// مثال:
+---
+
+### crypto.getCiphers()
+- **الوصف**: الحصول على قائمة خوارزميات التشفير المدعومة.
+- **مثال:**
+```js
 console.log('Available ciphers:', crypto.getCiphers());
 ```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/crypto.html#cryptogetciphers)
 
-#### الأخطاء الشائعة:
-- [❌] استخدام خوارزميات ضعيفة أو قديمة (مثل md5 أو sha1) → الحل: استخدم sha256 أو أقوى.
-- [❌] تمرير مدخلات المستخدم مباشرة إلى التشفير أو التوقيع → الحل: تحقق وفلتر المدخلات دائماً.
-- [❌] استخدام مفاتيح أو IV غير عشوائية أو قصيرة → الحل: استخدم randomBytes لطول مناسب.
-- [❌] تجاهل معالجة الأخطاء في callbacks أو try/catch → الحل: عالج جميع الأخطاء دائماً.
-- [❌] تحويل بيانات ثنائية إلى نص بدون ترميز مناسب → الحل: استخدم Buffer أو base64/hex عند الحاجة.
+---
 
-#### نصائح الخبراء:
-- [⚠️] لا تستخدم خوارزميات قديمة أو ضعيفة حتى لو كانت مدعومة.
-- [💡] استخدم randomBytes أو randomInt لتوليد القيم العشوائية بدلاً من Math.random.
-- [🚀] استخدم scrypt أو pbkdf2 مع عدد تكرارات كبير لتخزين كلمات المرور بأمان.
-- [⚠️] لا تعرض المفاتيح أو القيم السرية في السجلات أو رسائل الخطأ.
-- [💡] استخدم timingSafeEqual عند مقارنة التواقيع أو الرموز لمنع هجمات التوقيت.
-- [🚀] راقب تحديثات Node.js باستمرار لتجنب الثغرات في مكتبة التشفير. 
+## حالات الاستخدام الشائعة
+- حماية كلمات المرور وتخزينها بأمان
+- التحقق من سلامة البيانات (hash, HMAC)
+- تشفير وفك تشفير البيانات الحساسة
+- توليد رموز عشوائية أو UUIDs
+- توقيع البيانات والتحقق من صحتها
+
+---
+
+## أفضل الممارسات
+- استخدم خوارزميات قوية وحديثة (sha256, sha512, aes-256-cbc)
+- استخدم randomBytes أو randomInt للقيم العشوائية
+- استخدم scrypt أو pbkdf2 مع عدد تكرارات كبير لكلمات المرور
+- عالج جميع الأخطاء في callbacks أو try/catch
+- استخدم timingSafeEqual عند مقارنة التواقيع أو الرموز
+
+---
+
+## التحذيرات الأمنية
+- لا تستخدم خوارزميات ضعيفة أو قديمة (md5, sha1)
+- لا تمرر مدخلات المستخدم مباشرة إلى التشفير أو التوقيع
+- لا تستخدم مفاتيح أو IV غير عشوائية أو قصيرة
+- لا تعرض المفاتيح أو القيم السرية في السجلات أو رسائل الخطأ
+
+---
+
+## أدوات التصحيح المتعلقة
+- [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
+- [crypto-js](https://www.npmjs.com/package/crypto-js) (مكتبة تشفير إضافية)
+
+---
+
+## اختبار تفاعلي
+```js
+const test = require('node:test');
+const assert = require('node:assert');
+const crypto = require('node:crypto');
+
+test('اختبار randomBytes', (t) => {
+  crypto.randomBytes(8, (err, buf) => {
+    assert.strictEqual(buf.length, 8);
+  });
+});
+```
+
+---
+
+## نصائح الخبراء
+- استخدم randomBytes أو randomInt بدلاً من Math.random
+- استخدم scrypt أو pbkdf2 مع عدد تكرارات كبير لتخزين كلمات المرور
+- استخدم timingSafeEqual عند مقارنة التواقيع أو الرموز
+- راقب تحديثات Node.js باستمرار لتجنب الثغرات
+
+---
+
+## ملاحظات تقنية
+- بعض الدوال تدعم Promises (راجع التوثيق الرسمي)
+- بعض الخوارزميات قد لا تكون متاحة في جميع الأنظمة
+- راجع [توثيق Node.js الرسمي - crypto](https://nodejs.org/docs/latest/api/crypto.html) لأي تحديثات 
