@@ -572,3 +572,112 @@ test('اختبار كتابة وقراءة ملف', async (t) => {
 - [🚀] استخدم highWaterMark في Streams لتحسين الأداء مع الملفات الكبيرة.
 - [⚠️] تحقق من وجود الملف قبل العمليات الحساسة لتجنب الأخطاء.
 - [💡] استخدم try-catch مع الدوال المتزامنة و error handling مع الدوال غير المتزامنة. 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: نسخ مجلد كامل مع جميع الملفات والمجلدات الفرعية (Recursive Copy)
+```js
+const fs = require('fs');
+const path = require('path');
+function copyDir(src, dest) {
+  fs.mkdir(dest, { recursive: true }, (err) => {
+    if (err) return console.error('خطأ في إنشاء المجلد:', err);
+    fs.readdir(src, { withFileTypes: true }, (err, entries) => {
+      if (err) return console.error('خطأ في قراءة المجلد:', err);
+      entries.forEach(entry => {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) {
+          copyDir(srcPath, destPath);
+        } else {
+          fs.copyFile(srcPath, destPath, err => {
+            if (err) console.error('خطأ في النسخ:', err);
+          });
+        }
+      });
+    });
+  });
+}
+copyDir('source_folder', 'dest_folder');
+```
+**شرح:** يوضح كيفية نسخ مجلد كامل بشكل متداخل مع معالجة الأخطاء.
+
+---
+
+### مثال 2: مراقبة التغييرات على ملف وتسجيلها في سجل
+```js
+const fs = require('fs');
+const watcher = fs.watch('watched.txt', (eventType, filename) => {
+  fs.appendFile('log.txt', `حدث: ${eventType} على ${filename}\n`, err => {
+    if (err) console.error('خطأ في السجل:', err);
+  });
+});
+console.log('يتم الآن مراقبة watched.txt');
+```
+**شرح:** يوضح كيفية مراقبة ملف وتسجيل الأحداث في سجل.
+
+---
+
+### مثال 3: قراءة ملف كبير وتحويله إلى JSON مع معالجة الأخطاء
+```js
+const fs = require('fs');
+fs.readFile('data.json', 'utf8', (err, data) => {
+  if (err) return console.error('خطأ في القراءة:', err);
+  try {
+    const obj = JSON.parse(data);
+    console.log('تم التحويل إلى كائن:', obj);
+  } catch (e) {
+    console.error('خطأ في التحويل إلى JSON:', e);
+  }
+});
+```
+**شرح:** يوضح كيفية قراءة ملف وتحويله إلى كائن مع معالجة جميع الأخطاء.
+
+---
+
+### مثال 4: استخدام fs.promises مع async/await لإدارة الملفات
+```js
+const fs = require('fs/promises');
+async function safeMove(src, dest) {
+  try {
+    await fs.rename(src, dest);
+    console.log('تم النقل بنجاح!');
+  } catch (err) {
+    if (err.code === 'EXDEV') {
+      // إذا كان النقل بين أقراص مختلفة، انسخ ثم احذف
+      await fs.copyFile(src, dest);
+      await fs.unlink(src);
+      console.log('تم النسخ والحذف (نقل بين أقراص)!');
+    } else {
+      console.error('خطأ في النقل:', err);
+    }
+  }
+}
+safeMove('file1.txt', 'folder/file1.txt');
+```
+**شرح:** يوضح كيفية التعامل مع النقل الآمن للملفات بين أقراص مختلفة.
+
+---
+
+### مثال 5: التعامل مع الملفات المؤقتة وتنظيفها تلقائياً
+```js
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const tmpFile = path.join(os.tmpdir(), `tmp_${Date.now()}.txt`);
+fs.writeFile(tmpFile, 'بيانات مؤقتة', (err) => {
+  if (err) return console.error('خطأ في الكتابة:', err);
+  console.log('تم إنشاء ملف مؤقت:', tmpFile);
+  setTimeout(() => {
+    fs.unlink(tmpFile, (err) => {
+      if (err) return console.error('خطأ في الحذف:', err);
+      console.log('تم حذف الملف المؤقت!');
+    });
+  }, 5000);
+});
+```
+**شرح:** يوضح كيفية إنشاء ملف مؤقت وحذفه تلقائياً بعد فترة.
+
+--- 

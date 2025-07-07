@@ -349,3 +349,73 @@ test('اختبار util.isDeepStrictEqual', () => {
 - [🚀] استخدم util.format لتوحيد رسائل السجلات.
 - [⚠️] لا تعرض رسائل util.inspect أو util.format للمستخدم النهائي إذا كانت تحتوي على بيانات حساسة.
 - [💡] استخدم util.debuglog لتفعيل رسائل التصحيح فقط عند الحاجة (NODE_DEBUG=اسم_القسم). 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: تحويل جميع دوال fs القديمة إلى وعود (Promises) واستخدامها مع async/await
+```js
+const util = require('util');
+const fs = require('fs');
+const readFileAsync = util.promisify(fs.readFile);
+const writeFileAsync = util.promisify(fs.writeFile);
+async function copyFile(src, dest) {
+  try {
+    const data = await readFileAsync(src, 'utf8');
+    await writeFileAsync(dest, data);
+    console.log('تم النسخ بنجاح!');
+  } catch (err) {
+    console.error('خطأ في النسخ:', err);
+  }
+}
+copyFile('a.txt', 'b.txt');
+```
+**شرح:** يوضح كيفية تحويل دوال callback إلى وعود واستخدامها مع async/await.
+
+---
+
+### مثال 2: تنسيق رسائل السجلات مع معلومات متقدمة
+```js
+const util = require('util');
+const user = { id: 1, name: 'أحمد' };
+console.log(util.format('مستخدم: %O', user));
+console.log(util.formatWithOptions({ colors: true }, 'تفاصيل: %O', user));
+```
+**شرح:** يوضح الفرق بين format وformatWithOptions.
+
+---
+
+### مثال 3: طباعة كائنات معقدة مع خيارات متقدمة
+```js
+const util = require('util');
+const obj = { a: 1, b: { c: [2, 3, { d: 4 }] } };
+console.log(util.inspect(obj, { depth: null, colors: true }));
+```
+**شرح:** يوضح كيفية طباعة كائنات متداخلة مع خيارات العرض.
+
+---
+
+### مثال 4: مقارنة كائنات عميقة في الاختبارات
+```js
+const util = require('util');
+const assert = require('assert');
+const a = { x: 1, y: [2, 3] };
+const b = { x: 1, y: [2, 3] };
+assert(util.isDeepStrictEqual(a, b));
+```
+**شرح:** يوضح استخدام isDeepStrictEqual في الاختبارات.
+
+---
+
+### مثال 5: التعامل مع ترميز النصوص وتحويلها
+```js
+const util = require('util');
+const enc = new util.TextEncoder();
+const arr = enc.encode('مرحبا');
+const dec = new util.TextDecoder();
+console.log(dec.decode(arr));
+```
+**شرح:** يوضح كيفية ترميز النصوص وفك ترميزها.
+
+--- 

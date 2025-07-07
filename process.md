@@ -389,3 +389,63 @@ test('اختبار memoryUsage', () => {
 - استخدم process.memoryUsage لمراقبة التسريبات
 - استخدم process.hrtime لقياس الزمن بدقة نانوية
 - راجع [توثيق Node.js الرسمي - process](https://nodejs.org/docs/latest/api/process.html) لأي تحديثات 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: مراقبة استهلاك الذاكرة والمعالج في تطبيق طويل الأمد
+```js
+setInterval(() => {
+  const mem = process.memoryUsage();
+  const cpu = process.cpuUsage();
+  console.log('الذاكرة:', mem.rss, 'المعالج:', cpu.user);
+}, 5000);
+```
+**شرح:** يوضح كيفية مراقبة الموارد بشكل دوري.
+
+---
+
+### مثال 2: التعامل مع الإشارات (signals) لإغلاق التطبيق بأمان
+```js
+process.on('SIGINT', () => {
+  console.log('تم استقبال SIGINT، إنهاء التطبيق بأمان...');
+  process.exit(0);
+});
+```
+**شرح:** يوضح كيفية التقاط إشارات النظام.
+
+---
+
+### مثال 3: تنفيذ دوال متسلسلة باستخدام process.nextTick
+```js
+function step1() { console.log('الخطوة 1'); }
+function step2() { console.log('الخطوة 2'); }
+process.nextTick(step1);
+step2();
+// النتيجة: الخطوة 2 ثم الخطوة 1
+```
+**شرح:** يوضح ترتيب التنفيذ مع nextTick.
+
+---
+
+### مثال 4: التعامل مع الأخطاء غير المعالجة
+```js
+process.on('uncaughtException', err => {
+  console.error('خطأ غير معالج:', err);
+  process.exit(1);
+});
+throw new Error('اختبار');
+```
+**شرح:** يوضح كيفية التقاط الأخطاء غير المعالجة.
+
+---
+
+### مثال 5: تغيير متغيرات البيئة أثناء التشغيل
+```js
+process.env.MY_VAR = 'test';
+console.log('MY_VAR:', process.env.MY_VAR);
+```
+**شرح:** يوضح كيفية تعديل متغيرات البيئة ديناميكياً.
+
+--- 

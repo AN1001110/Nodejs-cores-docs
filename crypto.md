@@ -392,3 +392,85 @@ test('hash sha256', () => {
 - [🚀] استخدم scrypt أو pbkdf2 مع عدد تكرارات كبير لكلمات المرور.
 
 --- 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: تشفير وفك تشفير نص باستخدام AES-256-CBC
+```js
+const crypto = require('node:crypto');
+const key = crypto.randomBytes(32); // مفتاح 256 بت
+const iv = crypto.randomBytes(16);  // متجه تهيئة
+const message = 'سر مهم';
+// التشفير
+const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+let encrypted = cipher.update(message, 'utf8', 'hex');
+encrypted += cipher.final('hex');
+// فك التشفير
+const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+decrypted += decipher.final('utf8');
+console.log('النص الأصلي:', message);
+console.log('المشفر:', encrypted);
+console.log('بعد فك التشفير:', decrypted);
+```
+**شرح:** يوضح كيفية تشفير وفك تشفير نص مع معالجة الأخطاء.
+
+---
+
+### مثال 2: توليد وتخزين كلمة مرور مشفرة باستخدام scrypt
+```js
+const crypto = require('node:crypto');
+const password = 'myPassword123';
+const salt = crypto.randomBytes(16);
+crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+  if (err) throw err;
+  // تخزين salt و derivedKey في قاعدة البيانات
+  console.log('Salt:', salt.toString('hex'));
+  console.log('Hash:', derivedKey.toString('hex'));
+});
+```
+**شرح:** مثال عملي على تخزين كلمات المرور بأمان.
+
+---
+
+### مثال 3: التحقق من سلامة ملف عبر hash
+```js
+const crypto = require('node:crypto');
+const fs = require('fs');
+const hash = crypto.createHash('sha256');
+const stream = fs.createReadStream('file.txt');
+stream.on('data', chunk => hash.update(chunk));
+stream.on('end', () => {
+  console.log('SHA256:', hash.digest('hex'));
+});
+stream.on('error', err => console.error('خطأ في القراءة:', err));
+```
+**شرح:** يوضح كيفية حساب تجزئة ملف كبير بأمان.
+
+---
+
+### مثال 4: توقيع والتحقق من البيانات رقمياً
+```js
+const crypto = require('node:crypto');
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const data = Buffer.from('بيانات مهمة');
+const signature = crypto.sign('sha256', data, privateKey);
+const isValid = crypto.verify('sha256', data, publicKey, signature);
+console.log('التوقيع صحيح؟', isValid);
+```
+**شرح:** يوضح كيفية التوقيع والتحقق من البيانات رقمياً.
+
+---
+
+### مثال 5: مقارنة آمنة بين قيم حساسة
+```js
+const crypto = require('node:crypto');
+const a = Buffer.from('secret1');
+const b = Buffer.from('secret1');
+console.log('مطابقة آمنة:', crypto.timingSafeEqual(a, b));
+```
+**شرح:** يوضح أهمية استخدام timingSafeEqual للمقارنات الحساسة.
+
+--- 

@@ -214,3 +214,72 @@ test('اختبار new URL', () => {
 - WHATWG URL API هي الافتراضية في Node.js منذ الإصدار 10+
 - الترميز التلقائي في URLSearchParams يمنع أخطاء شائعة
 - راجع [توثيق Node.js الرسمي - url](https://nodejs.org/docs/latest/api/url.html) لأي تحديثات 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: بناء رابط ديناميكي لواجهة REST API
+```js
+const { URL, URLSearchParams } = require('node:url');
+const base = 'https://api.example.com/v1/users';
+const params = new URLSearchParams({ page: 2, limit: 10 });
+const url = new URL(base + '?' + params.toString());
+console.log('الرابط النهائي:', url.toString());
+```
+**شرح:** يوضح كيفية بناء رابط ديناميكي مع بارامترات استعلام.
+
+---
+
+### مثال 2: تحليل رابط واسترجاع معلوماته
+```js
+const { URL } = require('node:url');
+const myURL = new URL('https://user:pass@nodejs.org:8080/docs?x=1#top');
+console.log('المضيف:', myURL.hostname);
+console.log('المسار:', myURL.pathname);
+console.log('البارامترات:', myURL.searchParams.toString());
+```
+**شرح:** يوضح كيفية استخراج معلومات من رابط.
+
+---
+
+### مثال 3: تحويل مسار ملف إلى رابط file:// والعكس
+```js
+const { pathToFileURL, fileURLToPath } = require('node:url');
+const filePath = '/tmp/test.txt';
+const fileUrl = pathToFileURL(filePath);
+console.log('file URL:', fileUrl.href);
+console.log('المسار الأصلي:', fileURLToPath(fileUrl));
+```
+**شرح:** يوضح التحويل بين المسارات المحلية وروابط الملفات.
+
+---
+
+### مثال 4: التعامل مع روابط IDN (دعم Unicode)
+```js
+const { domainToASCII, domainToUnicode } = require('node:url');
+const unicodeDomain = 'مثال.إختبار';
+const asciiDomain = domainToASCII(unicodeDomain);
+console.log('ASCII:', asciiDomain);
+console.log('Unicode:', domainToUnicode(asciiDomain));
+```
+**شرح:** يوضح دعم الروابط الدولية وتحويلها.
+
+---
+
+### مثال 5: التحقق من صحة رابط قبل استخدامه
+```js
+function isValidUrl(str) {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+console.log(isValidUrl('https://nodejs.org'));
+console.log(isValidUrl('رابط غير صالح'));
+```
+**شرح:** يوضح كيفية التحقق من صحة الروابط قبل استخدامها.
+
+--- 

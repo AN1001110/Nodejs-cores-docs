@@ -280,3 +280,86 @@ test('isPrimary/isWorker', () => {
 - [🚀] أعد تشغيل العمال تلقائياً عند الخروج غير المتوقع.
 
 --- 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: توزيع حمل خادم HTTP تلقائياً على جميع الأنوية
+```js
+const cluster = require('node:cluster');
+const http = require('http');
+const os = require('os');
+if (cluster.isPrimary) {
+  const cpuCount = os.cpus().length;
+  for (let i = 0; i < cpuCount; i++) cluster.fork();
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`عامل ${worker.process.pid} خرج، إعادة تشغيل...`);
+    cluster.fork();
+  });
+} else {
+  http.createServer((req, res) => {
+    res.end('Hello from worker ' + process.pid);
+  }).listen(3000);
+}
+```
+**شرح:** مثال عملي على توزيع الحمل تلقائياً مع إعادة تشغيل العمال عند الخروج.
+
+---
+
+### مثال 2: مشاركة الحالة بين العمال باستخدام Redis
+```js
+// يتطلب تثبيت redis وتهيئة خادم Redis
+const cluster = require('node:cluster');
+const redis = require('redis');
+if (cluster.isPrimary) {
+  cluster.fork();
+  cluster.fork();
+} else {
+  const client = redis.createClient();
+  client.incr('counter', (err, val) => {
+    if (err) return console.error('Redis error:', err);
+    console.log('القيمة الحالية:', val);
+    client.quit();
+  });
+}
+```
+**شرح:** يوضح كيفية مشاركة الحالة بين العمال عبر Redis.
+
+---
+
+### مثال 3: مراقبة صحة العمال وإعادة تشغيلهم تلقائياً
+```js
+const cluster = require('node:cluster');
+if (cluster.isPrimary) {
+  cluster.fork();
+  cluster.on('exit', (worker, code, signal) => {
+    if (code !== 0) {
+      console.log('عامل خرج بخطأ، إعادة تشغيل...');
+      cluster.fork();
+    }
+  });
+}
+```
+**شرح:** يوضح كيفية مراقبة صحة العمال وإعادة تشغيلهم عند الخروج غير المتوقع.
+
+---
+
+### مثال 4: التواصل بين العامل والرئيس
+```js
+const cluster = require('node:cluster');
+if (cluster.isPrimary) {
+  const worker = cluster.fork();
+  worker.on('message', msg => {
+    console.log('رسالة من العامل:', msg);
+  });
+  worker.send({ hello: 'from master' });
+} else {
+  process.on('message', msg => {
+    process.send({ reply: 'من العامل' });
+  });
+}
+```
+**شرح:** مثال عملي على التواصل بين العامل والرئيس عبر الرسائل.
+
+--- 

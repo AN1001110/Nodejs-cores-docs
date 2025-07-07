@@ -297,3 +297,76 @@ test("اختبار extname", () => {
 
 - جميع دوال path لا تتعامل فعليًا مع نظام الملفات (فقط معالجة نصية)
 - راجع [توثيق Node.js الرسمي - path](https://nodejs.org/docs/latest/api/path.html) لأي تحديثات
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: بناء مسار ديناميكي عبر الأنظمة
+
+```js
+const path = require("path");
+const userFolder = "user";
+const fileName = "data.txt";
+const fullPath = path.join(__dirname, userFolder, fileName);
+console.log("المسار الكامل:", fullPath);
+```
+
+**شرح:** يوضح كيفية بناء مسار ديناميكي متوافق مع جميع الأنظمة.
+
+---
+
+### مثال 2: التحقق من صحة المسار قبل الاستخدام
+
+```js
+const path = require("path");
+function isSafe(p) {
+  return !p.includes("..") && path.isAbsolute(p);
+}
+console.log(isSafe("/tmp/file.txt"));
+console.log(isSafe("../etc/passwd"));
+```
+
+**شرح:** يوضح كيفية التحقق من المسارات لتفادي ثغرات path traversal.
+
+---
+
+### مثال 3: تحويل المسارات بين Windows وPOSIX
+
+```js
+const path = require("path");
+const winPath = "C:\\temp\\file.txt";
+const posixPath = "/tmp/file.txt";
+console.log("POSIX:", path.posix.basename(posixPath));
+console.log("Windows:", path.win32.basename(winPath));
+```
+
+**شرح:** يوضح كيفية التعامل مع المسارات عبر الأنظمة.
+
+---
+
+### مثال 4: تحليل وبناء كائن مسار
+
+```js
+const path = require("path");
+const parsed = path.parse("/tmp/file.txt");
+console.log("تحليل:", parsed);
+const formatted = path.format(parsed);
+console.log("إعادة البناء:", formatted);
+```
+
+**شرح:** يوضح تحليل وبناء كائنات المسار.
+
+---
+
+### مثال 5: التعامل مع فواصل المسارات ومتغيرات البيئة
+
+```js
+const path = require("path");
+console.log("فاصل المسارات:", path.sep);
+console.log("فاصل متغيرات البيئة:", path.delimiter);
+```
+
+**شرح:** يوضح استخدام الفواصل حسب النظام.
+
+---

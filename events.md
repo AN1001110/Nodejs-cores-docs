@@ -282,3 +282,76 @@ test('اختبار once', () => {
 - معظم مكتبات Node.js (مثل http, stream) ترث من EventEmitter
 - إطلاق الأحداث (emit) سريع جدًا لكن المستمعين الكُثر قد يؤثرون على الأداء
 - راجع [توثيق Node.js الرسمي - events](https://nodejs.org/docs/latest/api/events.html) لأي تحديثات 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: بناء نظام إشعارات بسيط باستخدام EventEmitter
+```js
+const EventEmitter = require('events');
+class Notifier extends EventEmitter {
+  notify(msg) {
+    this.emit('notify', msg);
+  }
+}
+const notifier = new Notifier();
+notifier.on('notify', msg => {
+  console.log('إشعار جديد:', msg);
+});
+notifier.notify('تمت إضافة عنصر جديد!');
+```
+**شرح:** يوضح كيفية بناء نظام إشعارات بسيط عبر الأحداث.
+
+---
+
+### مثال 2: التعامل مع الأخطاء في الأحداث
+```js
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
+emitter.on('error', err => {
+  console.error('حدث خطأ:', err.message);
+});
+emitter.emit('error', new Error('فشل في العملية'));
+```
+**شرح:** يوضح أهمية التعامل مع حدث 'error' لتجنب انهيار التطبيق.
+
+---
+
+### مثال 3: استخدام once وprependListener مع الأحداث
+```js
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
+emitter.once('init', () => console.log('تهيئة لمرة واحدة'));
+emitter.prependListener('init', () => console.log('سيتم تنفيذ هذا أولاً'));
+emitter.emit('init');
+```
+**شرح:** يوضح الفرق بين once وprependListener.
+
+---
+
+### مثال 4: عداد أحداث متقدم مع listenerCount
+```js
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
+function handler() { console.log('تم التنفيذ'); }
+emitter.on('data', handler);
+console.log('عدد المستمعين:', emitter.listenerCount('data'));
+emitter.off('data', handler);
+console.log('عدد المستمعين بعد الإزالة:', emitter.listenerCount('data'));
+```
+**شرح:** يوضح كيفية عد المستمعين وإزالتهم ديناميكياً.
+
+---
+
+### مثال 5: التقاط الوعود المرفوضة تلقائياً
+```js
+const EventEmitter = require('events');
+const emitter = new EventEmitter({ captureRejections: true });
+emitter.on('event', async () => { throw new Error('رفض!'); });
+emitter.on('error', err => console.error('تم التقاط:', err));
+emitter.emit('event');
+```
+**شرح:** يوضح ميزة captureRejections في الأحداث غير المتزامنة.
+
+--- 

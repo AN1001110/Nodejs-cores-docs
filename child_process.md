@@ -221,3 +221,85 @@ test('exec يعمل بدون خطأ', (t, done) => {
 - [🚀] استخدم spawn للأوامر الطويلة أو التي تحتاج Streams.
 
 --- 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: تنفيذ أمر نظامي مع قراءة المخرجات وحفظها في ملف
+```js
+const { exec } = require('child_process');
+const fs = require('fs');
+exec('ls -lh', (error, stdout, stderr) => {
+  if (error) return console.error('خطأ في التنفيذ:', error);
+  fs.writeFile('output.txt', stdout, err => {
+    if (err) return console.error('خطأ في الحفظ:', err);
+    console.log('تم حفظ المخرجات في output.txt');
+  });
+});
+```
+**شرح:** ينفذ أمر نظامي ويخزن المخرجات في ملف مع معالجة الأخطاء.
+
+---
+
+### مثال 2: بناء خط معالجة (pipeline) بين عمليتين فرعيتين
+```js
+const { spawn } = require('child_process');
+const grep = spawn('grep', ['node']);
+const ps = spawn('ps', ['aux']);
+ps.stdout.pipe(grep.stdin);
+grep.stdout.on('data', data => {
+  console.log('العمليات التي تحتوي على node:', data.toString());
+});
+ps.on('error', err => console.error('خطأ في ps:', err));
+grep.on('error', err => console.error('خطأ في grep:', err));
+```
+**شرح:** يوضح كيفية ربط عمليتين فرعيتين عبر الأنابيب.
+
+---
+
+### مثال 3: استخدام fork للتواصل بين العمليات
+```js
+// main.js
+const { fork } = require('child_process');
+const child = fork('worker.js');
+child.on('message', msg => {
+  console.log('رسالة من العامل:', msg);
+});
+child.send({ action: 'start' });
+```
+```js
+// worker.js
+process.on('message', msg => {
+  if (msg.action === 'start') {
+    process.send({ status: 'تم البدء' });
+  }
+});
+```
+**شرح:** مثال عملي على التواصل بين العمليات باستخدام fork والرسائل.
+
+---
+
+### مثال 4: التعامل مع أوامر ذات مخرجات ضخمة بأمان
+```js
+const { exec } = require('child_process');
+exec('cat ملف_ضخم.txt', { maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
+  if (err) return console.error('خطأ:', err);
+  console.log('تمت القراءة بنجاح');
+});
+```
+**شرح:** يوضح أهمية ضبط maxBuffer عند التعامل مع مخرجات كبيرة.
+
+---
+
+### مثال 5: التعامل مع الأخطاء في العمليات الفرعية
+```js
+const { spawn } = require('child_process');
+const child = spawn('غير_موجود');
+child.on('error', err => {
+  console.error('حدث خطأ متوقع:', err.message);
+});
+```
+**شرح:** يوضح كيفية التقاط الأخطاء عند فشل تنفيذ أمر.
+
+--- 

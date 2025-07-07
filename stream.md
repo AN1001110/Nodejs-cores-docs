@@ -263,3 +263,95 @@ test('اختبار pipeline', async () => {
 - معظم مكتبات Node.js (مثل http, fs, zlib) تعتمد على streams
 - backpressure يمنع امتلاء الذاكرة عند تدفق البيانات بسرعة
 - راجع [توثيق Node.js الرسمي - stream](https://nodejs.org/docs/latest/api/stream.html) لأي تحديثات 
+
+---
+
+## أمثلة شاملة متقدمة
+
+### مثال 1: قراءة ملف كبير وتحويله إلى أحرف كبيرة أثناء الكتابة
+```js
+const fs = require('fs');
+const { Transform, pipeline } = require('node:stream');
+const upper = new Transform({
+  transform(chunk, encoding, callback) {
+    callback(null, chunk.toString().toUpperCase());
+  }
+});
+pipeline(
+  fs.createReadStream('input.txt'),
+  upper,
+  fs.createWriteStream('output.txt'),
+  err => {
+    if (err) return console.error('خطأ في المعالجة:', err);
+    console.log('تم التحويل والكتابة!');
+  }
+);
+```
+**شرح:** يوضح كيفية بناء خط معالجة متكامل مع معالجة الأخطاء.
+
+---
+
+### مثال 2: استهلاك تدفق قابل للقراءة باستخدام async iterator
+```js
+const { Readable } = require('node:stream');
+const readable = Readable.from(['a', 'b', 'c']);
+(async () => {
+  let result = '';
+  for await (const chunk of readable) {
+    result += chunk;
+  }
+  console.log('النتيجة:', result);
+})();
+```
+**شرح:** يوضح استخدام async iterator مع التدفقات.
+
+---
+
+### مثال 3: بناء Duplex مخصص (قراءة وكتابة)
+```js
+const { Duplex } = require('node:stream');
+const duplex = new Duplex({
+  read(size) {
+    this.push('بيانات');
+    this.push(null);
+  },
+  write(chunk, encoding, callback) {
+    console.log('Duplex كتب:', chunk.toString());
+    callback();
+  }
+});
+duplex.on('data', d => console.log('Duplex قرأ:', d.toString()));
+duplex.write('اختبار');
+```
+**شرح:** يوضح كيفية بناء Duplex مخصص.
+
+---
+
+### مثال 4: التعامل مع الأخطاء في التدفقات
+```js
+const { Readable } = require('node:stream');
+const readable = new Readable({
+  read() { this.emit('error', new Error('خطأ مخصص!')); }
+});
+readable.on('error', err => console.error('تم التقاط الخطأ:', err.message));
+readable.read();
+```
+**شرح:** يوضح أهمية التعامل مع الأخطاء في التدفقات.
+
+---
+
+### مثال 5: استخدام stream.promises مع await
+```js
+const { pipeline, Readable, Writable, promises: streamPromises } = require('node:stream');
+(async () => {
+  let out = '';
+  await streamPromises.pipeline(
+    Readable.from(['x', 'y']),
+    new Writable({ write(chunk, enc, cb) { out += chunk; cb(); } })
+  );
+  console.log('النتيجة:', out);
+})();
+```
+**شرح:** يوضح استخدام وعود التدفق مع await.
+
+--- 
