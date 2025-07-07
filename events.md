@@ -1,27 +1,47 @@
 # events (إدارة الأحداث في Node.js)
 
+---
+
 ## الوصف
-موديول events يوفر واجهة لإنشاء وإدارة الأحداث (EventEmitter)، وهو أساس نظام الأحداث في Node.js. يُستخدم في بناء تطبيقات تعتمد على الأحداث مثل الخوادم، التعامل مع البيانات المتدفقة، والتكامل مع مكتبات الطرف الثالث.
+موديول `events` يوفر واجهة لإنشاء وإدارة الأحداث (EventEmitter)، وهو أساس نظام الأحداث في Node.js. يُستخدم في بناء تطبيقات تعتمد على الأحداث مثل الخوادم، التعامل مع البيانات المتدفقة، والتكامل مع مكتبات الطرف الثالث.
 
 ---
 
-## فهرس الكلاسات والدوال
-| الكلاس/الدالة | الوصف |
-|---------------|-------|
-| [`EventEmitter`](#eventemitter) | الكلاس الأساسي لإدارة الأحداث |
-| [`on`](#on) | إضافة مستمع لحدث |
-| [`once`](#once) | مستمع لمرة واحدة |
-| [`emit`](#emit) | إطلاق حدث |
-| [`removeListener`/`off`](#removelisteneroff) | إزالة مستمع |
-| [`removeAllListeners`](#removealllisteners) | إزالة جميع المستمعين |
-| [`listeners`](#listeners) | جلب جميع المستمعين |
-| [`eventNames`](#eventnames) | جلب جميع أسماء الأحداث |
-| [`setMaxListeners`](#setmaxlisteners) | تحديد الحد الأقصى للمستمعين |
-| [`getMaxListeners`](#getmaxlisteners) | جلب الحد الأقصى الحالي |
+## فهرس الكلاسات والدوال (جدول سريع)
+| الكلاس/الدالة | الوصف | متوافق منذ |
+|---------------|-------|------------|
+| [`EventEmitter`](#eventemitter) | الكلاس الأساسي لإدارة الأحداث | دائمًا |
+| [`on`](#on) | إضافة مستمع لحدث | دائمًا |
+| [`once`](#once) | مستمع لمرة واحدة | دائمًا |
+| [`emit`](#emit) | إطلاق حدث | دائمًا |
+| [`removeListener`/`off`](#removelisteneroff) | إزالة مستمع | دائمًا |
+| [`removeAllListeners`](#removealllisteners) | إزالة جميع المستمعين | دائمًا |
+| [`listeners`](#listeners) | جلب جميع المستمعين | دائمًا |
+| [`eventNames`](#eventnames) | جلب جميع أسماء الأحداث | v6.0.0 |
+| [`setMaxListeners`](#setmaxlisteners) | تحديد الحد الأقصى للمستمعين | دائمًا |
+| [`getMaxListeners`](#getmaxlisteners) | جلب الحد الأقصى الحالي | دائمًا |
+| [`rawListeners`](#rawlisteners) | جلب المستمعين الأصليين | v9.4.0 |
+| [`prependListener`](#prependlistener) | إضافة مستمع في البداية | v6.0.0 |
+| [`prependOnceListener`](#prependoncelistener) | مستمع لمرة واحدة في البداية | v6.0.0 |
+| [`listenerCount`](#listenercount) | عدد المستمعين لحدث | دائمًا |
+| [`captureRejections`](#capturerejections) | التقاط الوعود المرفوضة | v13.4.0 |
 
 ---
 
-## شرح الكلاسات والدوال الأساسية
+## مخطط مرئي (Mermaid) لتدفق الأحداث
+```mermaid
+graph TD;
+  A[إنشاء EventEmitter] --> B[إضافة مستمعين]
+  B --> C[emit إطلاق حدث]
+  C --> D{هل يوجد مستمع؟}
+  D -- نعم --> E[تنفيذ المستمعين]
+  D -- لا --> F[لا يحدث شيء أو خطأ إذا كان الحدث 'error']
+  E --> G[إزالة مستمعين عند once]
+```
+
+---
+
+## شرح الكلاسات والدوال الأساسية والموسعة
 
 ### EventEmitter
 - **الوصف**: الكلاس الأساسي لإنشاء كائنات تدعم الأحداث.
@@ -30,7 +50,6 @@
 const EventEmitter = require('events');
 const emitter = new EventEmitter();
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#class-eventemitter)
 
 ---
 
@@ -42,7 +61,6 @@ const emitter = new EventEmitter();
 ```js
 emitter.on('data', (msg) => console.log('وصلت رسالة:', msg));
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteroneventname-listener)
 
 ---
 
@@ -55,7 +73,6 @@ emitter.on('data', (msg) => console.log('وصلت رسالة:', msg));
 emitter.once('init', () => console.log('تهيئة لمرة واحدة'));
 emitter.emit('init');
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteronceeventname-listener)
 
 ---
 
@@ -67,7 +84,6 @@ emitter.emit('init');
 ```js
 emitter.emit('data', 'مرحبا بالعالم');
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteremiteventname-args)
 
 ---
 
@@ -81,7 +97,6 @@ function handler() { console.log('تم الحذف'); }
 emitter.on('remove', handler);
 emitter.off('remove', handler);
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitteroffeventname-listener)
 
 ---
 
@@ -92,7 +107,6 @@ emitter.off('remove', handler);
 ```js
 emitter.removeAllListeners('data');
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitterremovealllistenerseventname)
 
 ---
 
@@ -103,7 +117,6 @@ emitter.removeAllListeners('data');
 ```js
 console.log(emitter.listeners('data'));
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emitterlistenerseventname)
 
 ---
 
@@ -113,7 +126,6 @@ console.log(emitter.listeners('data'));
 ```js
 console.log(emitter.eventNames());
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittereventnames)
 
 ---
 
@@ -124,7 +136,6 @@ console.log(emitter.eventNames());
 ```js
 emitter.setMaxListeners(20);
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittersetmaxlistenersn)
 
 ---
 
@@ -134,7 +145,64 @@ emitter.setMaxListeners(20);
 ```js
 console.log(emitter.getMaxListeners());
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/events.html#emittergetmaxlisteners)
+
+---
+
+### rawListeners(event)
+- **الوصف**: جلب المستمعين الأصليين (بما فيهم once قبل التنفيذ).
+- **مثال:**
+```js
+console.log(emitter.rawListeners('data'));
+```
+
+---
+
+### prependListener(event, listener)
+- **الوصف**: إضافة مستمع في بداية قائمة المستمعين.
+- **مثال:**
+```js
+emitter.prependListener('data', () => console.log('أول مستمع'));
+```
+
+---
+
+### prependOnceListener(event, listener)
+- **الوصف**: مستمع لمرة واحدة في البداية.
+- **مثال:**
+```js
+emitter.prependOnceListener('data', () => console.log('أول مرة فقط'));
+```
+
+---
+
+### listenerCount(event)
+- **الوصف**: عدد المستمعين لحدث معين.
+- **مثال:**
+```js
+console.log(emitter.listenerCount('data'));
+```
+
+---
+
+### captureRejections
+- **الوصف**: خاصية لتفعيل التقاط الوعود المرفوضة تلقائيًا في المستمعين async.
+- **مثال:**
+```js
+const emitter = new EventEmitter({ captureRejections: true });
+emitter.on('event', async () => { throw new Error('رفض!'); });
+emitter.on('error', err => console.error('تم التقاط:', err));
+```
+
+---
+
+## مقارنة بين بعض الدوال المتشابهة
+| الدالة | متى تستخدمها؟ |
+|--------|---------------|
+| `on` | لإضافة مستمع دائم |
+| `once` | لإضافة مستمع لمرة واحدة |
+| `prependListener` | لإضافة مستمع في البداية |
+| `removeListener`/`off` | لإزالة مستمع معين |
+| `removeAllListeners` | لإزالة جميع المستمعين |
 
 ---
 
@@ -151,18 +219,28 @@ console.log(emitter.getMaxListeners());
 - أضف دائمًا مستمع لحدث 'error' لتجنب انهيار التطبيق
 - أزل المستمعين غير الضروريين لتقليل استهلاك الذاكرة
 - استخدم once للأحداث التي تحدث مرة واحدة فقط
+- تعامل مع الأخطاء في جميع المستمعين
 
 ---
 
 ## التحذيرات الأمنية
 - لا تعتمد على الأحداث لنقل بيانات حساسة بين أجزاء غير موثوقة
 - تعامل مع الأخطاء دائمًا في مستمع 'error'
+- لا تترك مستمعين غير ضروريين لتجنب تسرب الذاكرة
 
 ---
 
 ## أدوات التصحيح المتعلقة
 - [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
 - [eventemitter3](https://www.npmjs.com/package/eventemitter3) (بديل خفيف وسريع)
+- [why-is-node-running](https://www.npmjs.com/package/why-is-node-running)
+
+---
+
+## توافق الإصدارات
+- معظم الدوال الأساسية متوفرة منذ الإصدارات الأولى
+- خصائص مثل rawListeners, captureRejections متوفرة في الإصدارات الحديثة فقط
+- راجع [توثيق Node.js الرسمي - events](https://nodejs.org/docs/latest/api/events.html) لأي تحديثات
 
 ---
 
@@ -179,6 +257,15 @@ test('اختبار on/emit', () => {
   emitter.emit('msg', 'ok');
   assert.strictEqual(result, 'ok');
 });
+
+test('اختبار once', () => {
+  const emitter = new EventEmitter();
+  let count = 0;
+  emitter.once('inc', () => { count++; });
+  emitter.emit('inc');
+  emitter.emit('inc');
+  assert.strictEqual(count, 1);
+});
 ```
 
 ---
@@ -187,6 +274,7 @@ test('اختبار on/emit', () => {
 - راقب عدد المستمعين لتجنب تسرب الذاكرة
 - استخدم once للأحداث التي تحدث مرة واحدة فقط
 - استخدم eventNames و listeners لمراقبة حالة الأحداث
+- تعامل مع الأخطاء في جميع المستمعين
 
 ---
 

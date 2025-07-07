@@ -1,24 +1,392 @@
-# fs (نظام الملفات)
+# fs (نظام الملفات في Node.js)
 
 ## الوصف
-واجهة Node.js للتعامل مع نظام الملفات (قراءة، كتابة، حذف، إدارة الملفات والمجلدات) وتدعم العمليات المتزامنة وغير المتزامنة عبر Callbacks وPromises. تُستخدم بكثرة في تطبيقات الخوادم لمعالجة الملفات النصية، الصور، السجلات.
+واجهة شاملة للتعامل مع الملفات والمجلدات والروابط في Node.js. تدعم العمليات المتزامنة (Sync) وغير المتزامنة (Callback/Promise)، وتوفر أدوات متقدمة لإدارة الملفات، المجلدات، الروابط، الأذونات، المراقبة، والعمليات منخفضة المستوى.
 
 ---
 
-## الدوال الأساسية
+## فهرس شامل للدوال والكلاسات
 
-| الدالة                | المعاملات                | الوصف                        |
-|-----------------------|--------------------------|------------------------------|
-| `fs.readFile`         | path, options, callback  | قراءة ملف                    |
-| `fs.writeFile`        | file, data, options      | كتابة ملف                    |
-| `fs.appendFile`       | path, data, options      | إضافة بيانات لنهاية ملف      |
-| `fs.createReadStream` | path, options            | إنشاء Stream للقراءة         |
-| `fs.createWriteStream`| path, options            | إنشاء Stream للكتابة         |
-| `fs.stat`             | path, options, callback  | معلومات عن ملف/مجلد         |
-| `fs.mkdir`            | path, options, callback  | إنشاء مجلد                   |
-| `fs.rm`               | path, options, callback  | حذف ملف أو مجلد              |
-| `fs.rename`           | oldPath, newPath, cb     | إعادة تسمية ملف/مجلد         |
-| ...                   | ...                      | ...                          |
+### دوال الملفات
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.readFile`](#fsreadfilepath-options-callback) | قراءة ملف كامل |
+| [`fs.writeFile`](#fswritefilefile-data-options-callback) | كتابة ملف كامل |
+| [`fs.appendFile`](#fsappendfilepath-data-options-callback) | إضافة بيانات لنهاية ملف |
+| [`fs.truncate`](#fstruncatepath-len-callback) | تقليص/توسيع ملف |
+| [`fs.unlink`](#fsunlinkpath-callback) | حذف ملف |
+| [`fs.copyFile`](#fscopyfilesrc-dest-flags-callback) | نسخ ملف |
+| [`fs.rename`](#fsrenameoldpath-newpath-callback) | إعادة تسمية ملف/مجلد |
+| [`fs.stat`](#fsstatpath-options-callback) | معلومات عن ملف/مجلد |
+| [`fs.lstat`](#fslstatpath-options-callback) | معلومات عن رابط رمزي/ملف |
+| [`fs.utimes`](#fsutimespath-atime-mtime-callback) | تحديث أوقات الوصول/التعديل |
+| [`fs.access`](#fsaccesspath-mode-callback) | التحقق من صلاحيات الوصول |
+
+### دوال المجلدات
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.mkdir`](#fsmkdirpath-options-callback) | إنشاء مجلد |
+| [`fs.rmdir`](#fsrmdirpath-options-callback) | حذف مجلد (قديم) |
+| [`fs.rm`](#fsrmpath-options-callback) | حذف ملف أو مجلد |
+| [`fs.readdir`](#fsreaddirpath-options-callback) | قراءة محتويات مجلد |
+
+### دوال الروابط
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.symlink`](#fssymlinktarget-path-type-callback) | إنشاء رابط رمزي |
+| [`fs.readlink`](#fsreadlinkpath-options-callback) | قراءة هدف رابط رمزي |
+
+### دوال منخفضة المستوى
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.open`](#fsopenpath-flags-mode-callback) | فتح ملف (File Descriptor) |
+| [`fs.close`](#fsclosefd-callback) | إغلاق ملف |
+| [`fs.read`](#fsreadfd-buffer-offset-length-position-callback) | قراءة من ملف مفتوح |
+| [`fs.write`](#fswritefd-buffer-offset-length-position-callback) | كتابة في ملف مفتوح |
+
+### دوال Streams
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.createReadStream`](#fscreatereadstreampath-options) | إنشاء Stream للقراءة |
+| [`fs.createWriteStream`](#fscreatewritestreampath-options) | إنشاء Stream للكتابة |
+
+### دوال Promises
+| الدالة | الوصف |
+|--------|-------|
+| [`fs.promises.readFile`](#fspromisesreadfilepath-options) | قراءة ملف (Promise) |
+| [`fs.promises.writeFile`](#fspromiseswritefilefile-data-options) | كتابة ملف (Promise) |
+| ... | ... |
+
+### الكلاسات المهمة
+| الكلاس | الوصف |
+|--------|-------|
+| [`fs.Stats`](#fsstats) | معلومات مفصلة عن ملف/مجلد |
+| [`fs.Dir`](#fsdir) | التعامل مع مجلدات بشكل متقدم |
+| [`fs.Dirent`](#fsdirent) | معلومات عن عنصر داخل مجلد |
+| [`fs.FSWatcher`](#fsfswatcher) | مراقبة التغييرات على الملفات/المجلدات |
+| [`fs.WriteStream`](#fswritestream) | Stream للكتابة |
+| [`fs.ReadStream`](#fsreadstream) | Stream للقراءة |
+
+---
+
+## شرح الدوال والكلاسات الأساسية (أمثلة وبارامترات)
+
+### fs.readFile(path[, options], callback)
+- **path**: مسار الملف (String | Buffer | URL)
+- **options**: الترميز أو كائن خيارات (اختياري)
+- **callback**: function(err, data)
+- **الوصف**: قراءة ملف كامل في الذاكرة.
+- **مثال:**
+```js
+fs.readFile('file.txt', 'utf8', (err, data) => {
+  if (err) throw err;
+  console.log(data);
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsreadfilepath-options-callback)
+
+---
+
+### fs.writeFile(file, data[, options], callback)
+- **file**: مسار الملف أو File Descriptor
+- **data**: البيانات (String | Buffer | TypedArray | DataView)
+- **options**: الترميز أو كائن خيارات (اختياري)
+- **callback**: function(err)
+- **الوصف**: كتابة بيانات إلى ملف (يُنشئ أو يستبدل الملف).
+- **مثال:**
+```js
+fs.writeFile('file.txt', 'Hello World', (err) => {
+  if (err) throw err;
+  console.log('تمت الكتابة!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fswritefilefile-data-options-callback)
+
+---
+
+### fs.appendFile(path, data[, options], callback)
+- **path**: مسار الملف أو File Descriptor
+- **data**: البيانات (String | Buffer | TypedArray | DataView)
+- **options**: الترميز أو كائن خيارات (اختياري)
+- **callback**: function(err)
+- **الوصف**: إضافة بيانات لنهاية ملف (ينشئ الملف إذا لم يوجد).
+- **مثال:**
+```js
+fs.appendFile('log.txt', 'سطر جديد\n', (err) => {
+  if (err) throw err;
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsappendfilepath-data-options-callback)
+
+---
+
+### fs.truncate(path[, len], callback)
+- **path**: مسار الملف (String | Buffer | URL)
+- **len**: الطول الجديد (Number, اختياري)
+- **callback**: function(err)
+- **الوصف**: تقليص أو توسيع حجم الملف لطول محدد (افتراضي 0).
+- **مثال:**
+```js
+fs.truncate('file.txt', 10, (err) => {
+  if (err) throw err;
+  console.log('تم تقليص الملف إلى 10 بايت');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fstruncatepath-len-callback)
+
+---
+
+### fs.unlink(path, callback)
+- **path**: مسار الملف (String | Buffer | URL)
+- **callback**: function(err)
+- **الوصف**: حذف ملف (لا يعمل على المجلدات).
+- **مثال:**
+```js
+fs.unlink('file.txt', (err) => {
+  if (err) throw err;
+  console.log('تم حذف الملف!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsunlinkpath-callback)
+
+---
+
+### fs.copyFile(src, dest[, flags], callback)
+- **src**: مسار الملف المصدر (String | Buffer | URL)
+- **dest**: مسار الملف الهدف (String | Buffer | URL)
+- **flags**: خيارات النسخ (Number, اختياري)
+- **callback**: function(err)
+- **الوصف**: نسخ ملف من src إلى dest مع خيارات إضافية (مثل عدم الكتابة فوق الملف الهدف).
+- **مثال:**
+```js
+fs.copyFile('source.txt', 'dest.txt', fs.constants.COPYFILE_EXCL, (err) => {
+  if (err) throw err;
+  console.log('تم النسخ بنجاح!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fscopyfilesrc-dest-flags-callback)
+
+---
+
+### fs.rename(oldPath, newPath, callback)
+- **oldPath**: المسار القديم (String | Buffer | URL)
+- **newPath**: المسار الجديد (String | Buffer | URL)
+- **callback**: function(err)
+- **الوصف**: إعادة تسمية ملف أو مجلد.
+- **مثال:**
+```js
+fs.rename('old.txt', 'new.txt', (err) => {
+  if (err) throw err;
+  console.log('تمت إعادة التسمية!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsrenameoldpath-newpath-callback)
+
+---
+
+### fs.stat(path[, options], callback)
+- **path**: المسار (String | Buffer | URL)
+- **options**: خيارات (Object, اختياري)
+- **callback**: function(err, stats)
+- **الوصف**: معلومات عن ملف أو مجلد (حجم، أذونات، أوقات...)
+- **مثال:**
+```js
+fs.stat('file.txt', (err, stats) => {
+  if (err) throw err;
+  console.log('الحجم:', stats.size);
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsstatpath-options-callback)
+
+---
+
+### fs.lstat(path[, options], callback)
+- **الوصف**: مثل stat لكن إذا كان المسار رابط رمزي يرجع معلومات الرابط نفسه وليس الهدف.
+- **مثال:**
+```js
+fs.lstat('symlink', (err, stats) => {
+  if (err) throw err;
+  console.log('هل هو رابط رمزي؟', stats.isSymbolicLink());
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fslstatpath-options-callback)
+
+---
+
+### fs.utimes(path, atime, mtime, callback)
+- **الوصف**: تحديث أوقات الوصول والتعديل لملف أو مجلد.
+- **مثال:**
+```js
+fs.utimes('file.txt', new Date(), new Date(), (err) => {
+  if (err) throw err;
+  console.log('تم تحديث الأوقات');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsutimespath-atime-mtime-callback)
+
+---
+
+### fs.access(path[, mode], callback)
+- **الوصف**: التحقق من وجود الملف وصلاحيات الوصول (قراءة/كتابة/تنفيذ).
+- **مثال:**
+```js
+fs.access('file.txt', fs.constants.R_OK | fs.constants.W_OK, (err) => {
+  if (err) {
+    console.error('لا يمكن القراءة أو الكتابة');
+  } else {
+    console.log('الملف قابل للقراءة والكتابة');
+  }
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsaccesspath-mode-callback)
+
+---
+
+### fs.mkdir(path[, options], callback)
+- **الوصف**: إنشاء مجلد جديد.
+- **مثال:**
+```js
+fs.mkdir('newdir', { recursive: true }, (err) => {
+  if (err) throw err;
+  console.log('تم إنشاء المجلد!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsmkdirpath-options-callback)
+
+---
+
+### fs.rm(path[, options], callback)
+- **الوصف**: حذف ملف أو مجلد (يدعم الحذف العميق).
+- **مثال:**
+```js
+fs.rm('dir', { recursive: true, force: true }, (err) => {
+  if (err) throw err;
+  console.log('تم الحذف!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsrmpath-options-callback)
+
+---
+
+### fs.readdir(path[, options], callback)
+- **الوصف**: قراءة محتويات مجلد (ترجع أسماء الملفات/المجلدات أو كائنات Dirent).
+- **مثال:**
+```js
+fs.readdir('.', { withFileTypes: true }, (err, files) => {
+  if (err) throw err;
+  files.forEach(dirent => {
+    console.log(dirent.name, dirent.isDirectory() ? 'مجلد' : 'ملف');
+  });
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsreaddirpath-options-callback)
+
+---
+
+### fs.symlink(target, path[, type], callback)
+- **الوصف**: إنشاء رابط رمزي جديد يشير إلى target.
+- **مثال:**
+```js
+fs.symlink('target.txt', 'link.txt', 'file', (err) => {
+  if (err) throw err;
+  console.log('تم إنشاء الرابط الرمزي!');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fssymlinktarget-path-type-callback)
+
+---
+
+### fs.readlink(path[, options], callback)
+- **الوصف**: قراءة هدف الرابط الرمزي (يرجع المسار الذي يشير إليه الرابط).
+- **مثال:**
+```js
+fs.readlink('mysymlink', (err, linkString) => {
+  if (err) throw err;
+  console.log('الرابط يشير إلى:', linkString);
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fsreadlinkpath-options-callback)
+
+---
+
+### fs.createReadStream(path[, options])
+- **الوصف**: إنشاء Stream للقراءة من ملف كبير أو تدفق بيانات.
+- **مثال:**
+```js
+const stream = fs.createReadStream('bigfile.txt', { encoding: 'utf8' });
+stream.on('data', chunk => console.log('جزء:', chunk.length));
+stream.on('end', () => console.log('انتهت القراءة.'));
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fscreatereadstreampath-options)
+
+---
+
+### fs.createWriteStream(path[, options])
+- **الوصف**: إنشاء Stream للكتابة إلى ملف كبير أو تدفق بيانات.
+- **مثال:**
+```js
+const stream = fs.createWriteStream('output.txt');
+stream.write('سطر أول\n');
+stream.end('النهاية');
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fscreatewritestreampath-options)
+
+---
+
+## شرح الكلاسات المهمة
+
+### fs.Stats
+- **الوصف**: كائن يحتوي معلومات مفصلة عن ملف أو مجلد (حجم، أذونات، أوقات، نوع).
+- **أهم الدوال:**
+  - `isFile()`, `isDirectory()`, `isSymbolicLink()`, ...
+- **مثال:**
+```js
+fs.stat('file.txt', (err, stats) => {
+  if (err) throw err;
+  if (stats.isFile()) console.log('ملف');
+  if (stats.isDirectory()) console.log('مجلد');
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#class-fsstats)
+
+---
+
+### fs.Dir, fs.Dirent
+- **الوصف**: التعامل مع المجلدات وقراءة محتوياتها بشكل متقدم (مع معرفة نوع كل عنصر).
+- **مثال:**
+```js
+fs.readdir('.', { withFileTypes: true }, (err, files) => {
+  files.forEach(dirent => {
+    if (dirent.isDirectory()) console.log('مجلد:', dirent.name);
+    if (dirent.isFile()) console.log('ملف:', dirent.name);
+  });
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#class-fsdirent)
+
+---
+
+### fs.FSWatcher
+- **الوصف**: مراقبة التغييرات على الملفات أو المجلدات (إضافة/تعديل/حذف).
+- **مثال:**
+```js
+const watcher = fs.watch('file.txt', (eventType, filename) => {
+  console.log('حدث:', eventType, filename);
+});
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#class-fswatcher)
+
+---
+
+### fs.WriteStream, fs.ReadStream
+- **الوصف**: Streams للكتابة/القراءة من الملفات الكبيرة أو تدفقات البيانات.
+- **مثال:**
+```js
+const ws = fs.createWriteStream('out.txt');
+ws.write('بيانات');
+ws.end();
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/fs.html#fswritestream)
 
 ---
 
@@ -33,11 +401,61 @@
 
 ---
 
+## التعامل مع المسارات (String/Buffer/URL)
+- معظم دوال fs تدعم المسارات كـ String أو Buffer أو كائن URL (file:).
+- المسارات النسبية تُفسر نسبةً إلى process.cwd().
+- مثال:
+```js
+fs.readFileSync(new URL('file:///tmp/hello'));
+```
+
+---
+
+## إدارة file descriptors
+- عند استخدام fs.open/fs.close يجب إغلاق كل ملف بعد الانتهاء لتجنب تسرب الموارد.
+- مثال:
+```js
+fs.open('file.txt', 'r', (err, fd) => {
+  if (err) throw err;
+  fs.close(fd, (err) => {
+    if (err) throw err;
+  });
+});
+```
+- مع fs.promises:
+```js
+const { open } = require('fs/promises');
+let file;
+try {
+  file = await open('file.txt', 'r');
+  // ...
+} finally {
+  await file.close();
+}
+```
+
+---
+
+## ملاحظات حول الأداء (threadpool)
+- جميع دوال fs غير المتزامنة (عدا FSWatcher) تستخدم threadpool.
+- يمكن ضبط حجم threadpool عبر UV_THREADPOOL_SIZE.
+
+---
+
+## fs.constants وأهم القيم
+- F_OK, R_OK, W_OK, X_OK: للتحقق من وجود/قراءة/كتابة/تنفيذ ملف.
+- COPYFILE_EXCL: لمنع الكتابة فوق الملف الهدف في copyFile.
+- مثال:
+```js
+fs.access('file.txt', fs.constants.R_OK | fs.constants.W_OK, (err) => { ... });
+```
+
+---
+
 ## أمثلة عملية متقدمة
 
+### قراءة ملف كبير باستخدام Stream مع معالجة الأخطاء
 ```js
-// قراءة ملف كبير باستخدام Stream مع معالجة الأخطاء
-const fs = require('fs');
 const readStream = fs.createReadStream('bigfile.txt', { encoding: 'utf8' });
 readStream.on('data', chunk => {
   console.log('جزء:', chunk.length);
@@ -50,9 +468,8 @@ readStream.on('end', () => {
 });
 ```
 
+### التعامل مع الأذونات وملفات حساسة
 ```js
-// مثال متقدم: التعامل مع الأذونات وملفات حساسة
-const fs = require('fs');
 fs.access('secret.txt', fs.constants.R_OK, (err) => {
   if (err) {
     console.error('لا يمكن قراءة الملف (قد يكون محميًا):', err);

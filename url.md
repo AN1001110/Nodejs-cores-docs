@@ -1,25 +1,39 @@
 # url (معالجة الروابط في Node.js)
 
+---
+
 ## الوصف
-موديول url يوفر أدوات لتحليل، بناء، وتنسيق الروابط (URLs) في Node.js. يدعم معيار WHATWG الحديث وواجهة API قديمة (Legacy). يُستخدم بكثرة في تطبيقات الويب، التعامل مع REST APIs، معالجة الروابط الديناميكية، وتحويل المسارات.
+موديول `url` يوفر أدوات لتحليل، بناء، وتنسيق الروابط (URLs) في Node.js. يدعم معيار WHATWG الحديث وواجهة API قديمة (Legacy). يُستخدم بكثرة في تطبيقات الويب، التعامل مع REST APIs، معالجة الروابط الديناميكية، وتحويل المسارات.
 
 ---
 
-## فهرس الكلاسات والدوال
-| الكلاس/الدالة | الوصف |
-|---------------|-------|
-| [`URL`](#url) | كلاس WHATWG URL الحديث |
-| [`URLSearchParams`](#urlsearchparams) | إدارة بارامترات الاستعلام |
-| [`url.parse`](#urlparseurlstring-parsequerystring-slashesdenotehost) | تحليل رابط (قديم) |
-| [`url.format`](#urlformaturlobject-options) | تنسيق كائن URL إلى نص (قديم) |
-| [`url.pathToFileURL`](#urlpathtofileurlpath) | تحويل مسار إلى رابط file:// |
-| [`url.fileURLToPath`](#urlfileurltopathurl) | تحويل رابط file:// إلى مسار |
-| [`url.domainToASCII`](#urldomaintoasciidomain) | تحويل دومين Unicode إلى ASCII |
-| [`url.domainToUnicode`](#urldomaintounicodedomain) | تحويل دومين ASCII إلى Unicode |
+## فهرس الكلاسات والدوال (جدول سريع)
+| الكلاس/الدالة | الوصف | متوافق منذ |
+|---------------|-------|------------|
+| [`URL`](#url) | كلاس WHATWG URL الحديث | v7.0.0 |
+| [`URLSearchParams`](#urlsearchparams) | إدارة بارامترات الاستعلام | v7.5.0 |
+| [`url.parse`](#urlparseurlstring-parsequerystring-slashesdenotehost) | تحليل رابط (قديم) | دائمًا |
+| [`url.format`](#urlformaturlobject-options) | تنسيق كائن URL إلى نص (قديم) | دائمًا |
+| [`url.pathToFileURL`](#urlpathtofileurlpath) | تحويل مسار إلى رابط file:// | v10.12.0 |
+| [`url.fileURLToPath`](#urlfileurltopathurl) | تحويل رابط file:// إلى مسار | v10.12.0 |
+| [`url.domainToASCII`](#urldomaintoasciidomain) | تحويل دومين Unicode إلى ASCII | v7.4.0 |
+| [`url.domainToUnicode`](#urldomaintounicodedomain) | تحويل دومين ASCII إلى Unicode | v7.4.0 |
 
 ---
 
-## شرح الكلاسات والدوال الأساسية
+## مخطط مرئي (Mermaid) لتحليل وبناء الروابط
+```mermaid
+graph TD;
+  A[نص رابط] --> B[تحليل عبر new URL]
+  B --> C[تعديل الخصائص]
+  C --> D[استخدام toString أو href]
+  A --> E[url.parse (قديم)]
+  E --> F[كائن URL قديم]
+```
+
+---
+
+## شرح الكلاسات والدوال الأساسية والموسعة
 
 ### URL(input[, base])
 - **input**: نص الرابط (String)
@@ -31,7 +45,6 @@ const myURL = new URL('https://user:pass@nodejs.org:8080/docs?x=1#top');
 console.log(myURL.hostname); // nodejs.org
 console.log(myURL.searchParams.get('x')); // 1
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#class-url)
 
 ---
 
@@ -44,7 +57,6 @@ const params = new URLSearchParams('a=1&b=2');
 params.append('c', '3');
 console.log(params.toString()); // a=1&b=2&c=3
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#class-urlsearchparams)
 
 ---
 
@@ -59,7 +71,6 @@ const url = require('node:url');
 const parsed = url.parse('https://nodejs.org/docs?x=1#top');
 console.log(parsed.hostname); // nodejs.org
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost)
 
 ---
 
@@ -73,7 +84,6 @@ const url = require('node:url');
 const myURL = new URL('https://nodejs.org/docs?x=1#top');
 console.log(url.format(myURL));
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_format_urlobject_options)
 
 ---
 
@@ -85,7 +95,6 @@ console.log(url.format(myURL));
 const { pathToFileURL } = require('node:url');
 console.log(pathToFileURL('/tmp/test.txt').href); // file:///tmp/test.txt
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_pathtofileurl_path)
 
 ---
 
@@ -98,7 +107,6 @@ const { fileURLToPath, pathToFileURL } = require('node:url');
 const fileUrl = pathToFileURL('/tmp/test.txt');
 console.log(fileURLToPath(fileUrl)); // /tmp/test.txt
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_fileurltopath_url)
 
 ---
 
@@ -110,7 +118,6 @@ console.log(fileURLToPath(fileUrl)); // /tmp/test.txt
 const { domainToASCII } = require('node:url');
 console.log(domainToASCII('مثال.إختبار'));
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_domaintoascii_domain)
 
 ---
 
@@ -122,7 +129,17 @@ console.log(domainToASCII('مثال.إختبار'));
 const { domainToUnicode } = require('node:url');
 console.log(domainToUnicode('xn--mgbh0fb.xn--kgbechtv'));
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/url.html#url_url_domaintounicode_domain)
+
+---
+
+## مقارنة بين WHATWG وLegacy API
+| الخاصية | WHATWG (حديث) | Legacy (قديم) |
+|---------|---------------|---------------|
+| تحليل رابط | `new URL()` | `url.parse()` |
+| بناء رابط | `url.toString()` | `url.format()` |
+| إدارة الاستعلام | `URLSearchParams` | يدوي أو عبر querystring |
+| دعم Unicode | نعم | محدود |
+| التوافق مع المتصفحات | نعم | لا |
 
 ---
 
@@ -147,12 +164,21 @@ console.log(domainToUnicode('xn--mgbh0fb.xn--kgbechtv'));
 ## التحذيرات الأمنية
 - لا تثق في الروابط القادمة من المستخدمين، تحقق منها قبل استخدامها
 - انتبه للترميز التلقائي في WHATWG API (قد يغير شكل الرابط)
+- لا تستخدم url.parse مع بيانات غير موثوقة (ثغرات قديمة)
 
 ---
 
 ## أدوات التصحيح المتعلقة
 - [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
 - [valid-url](https://www.npmjs.com/package/valid-url) (للتحقق من صحة الروابط)
+- [urlcat](https://www.npmjs.com/package/urlcat) (بناء روابط ديناميكية)
+
+---
+
+## توافق الإصدارات
+- WHATWG URL API هي الافتراضية في Node.js منذ الإصدار 10+
+- بعض الدوال متوفرة فقط في الإصدارات الحديثة (راجع الجدول أعلاه)
+- راجع [توثيق Node.js الرسمي - url](https://nodejs.org/docs/latest/api/url.html) لأي تحديثات
 
 ---
 
@@ -167,6 +193,11 @@ test('اختبار URLSearchParams', () => {
   params.append('c', '3');
   assert.strictEqual(params.toString(), 'a=1&b=2&c=3');
 });
+
+test('اختبار new URL', () => {
+  const myURL = new URL('https://nodejs.org/docs?x=1#top');
+  assert.strictEqual(myURL.hostname, 'nodejs.org');
+});
 ```
 
 ---
@@ -175,6 +206,7 @@ test('اختبار URLSearchParams', () => {
 - استخدم WHATWG API دائمًا لدعم Unicode والأمان
 - استخدم URLSearchParams بدل التلاعب اليدوي بالنصوص
 - تحقق من base عند تحليل روابط نسبية
+- تعامل مع الأخطاء عند تحليل الروابط
 
 ---
 

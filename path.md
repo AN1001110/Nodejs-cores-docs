@@ -1,32 +1,49 @@
 # path (معالجة المسارات في Node.js)
 
+---
+
 ## الوصف
 
-يوفر موديول path أدوات قوية للتعامل مع مسارات الملفات والمجلدات بشكل متوافق مع جميع أنظمة التشغيل (Windows, POSIX). يُستخدم في بناء تطبيقات تتعامل مع الملفات، توليد المسارات الديناميكية، والتحقق من صحة المسارات.
+يوفر موديول `path` أدوات قوية للتعامل مع مسارات الملفات والمجلدات بشكل متوافق مع جميع أنظمة التشغيل (Windows, POSIX). يُستخدم في بناء تطبيقات تتعامل مع الملفات، توليد المسارات الديناميكية، والتحقق من صحة المسارات.
 
 ---
 
-## فهرس الدوال
+## فهرس الدوال (جدول سريع)
 
-| الدالة                                                  | الوصف                  |
-| ------------------------------------------------------- | ---------------------- |
-| [`path.basename`](#pathbasenamepath-suffix)             | اسم الملف بدون المسار  |
-| [`path.dirname`](#pathdirnamepath)                      | اسم المجلد الحاوي      |
-| [`path.extname`](#pathextnamepath)                      | امتداد الملف           |
-| [`path.join`](#pathjoinpaths)                           | دمج أجزاء لمسار        |
-| [`path.resolve`](#pathresolvepaths)                     | تحويل أجزاء لمسار مطلق |
-| [`path.isAbsolute`](#pathisabsolutepath)                | هل المسار مطلق؟        |
-| [`path.normalize`](#pathnormalizepath)                  | تصحيح المسار           |
-| [`path.parse`](#pathparsepath)                          | تحليل المسار لكائن     |
-| [`path.format`](#pathformatpathobject)                  | بناء مسار من كائن      |
-| [`path.relative`](#pathrelativerfrom-to)                | حساب المسار النسبي     |
-| [`path.sep`](#pathsep)                                  | فاصل المسارات          |
-| [`path.delimiter`](#pathdelimiter)                      | فاصل متغيرات البيئة    |
-| [`path.win32`](#pathwin32) / [`path.posix`](#pathposix) | دوال خاصة بكل نظام     |
+| الدالة                                                  | الوصف                            | متوافق منذ |
+| ------------------------------------------------------- | -------------------------------- | ---------- |
+| [`path.basename`](#pathbasenamepath-suffix)             | اسم الملف بدون المسار            | دائمًا     |
+| [`path.dirname`](#pathdirnamepath)                      | اسم المجلد الحاوي                | دائمًا     |
+| [`path.extname`](#pathextnamepath)                      | امتداد الملف                     | دائمًا     |
+| [`path.join`](#pathjoinpaths)                           | دمج أجزاء لمسار                  | دائمًا     |
+| [`path.resolve`](#pathresolvepaths)                     | تحويل أجزاء لمسار مطلق           | دائمًا     |
+| [`path.isAbsolute`](#pathisabsolutepath)                | هل المسار مطلق؟                  | دائمًا     |
+| [`path.normalize`](#pathnormalizepath)                  | تصحيح المسار                     | دائمًا     |
+| [`path.parse`](#pathparsepath)                          | تحليل المسار لكائن               | دائمًا     |
+| [`path.format`](#pathformatpathobject)                  | بناء مسار من كائن                | دائمًا     |
+| [`path.relative`](#pathrelativerfrom-to)                | حساب المسار النسبي               | دائمًا     |
+| [`path.sep`](#pathsep)                                  | فاصل المسارات                    | دائمًا     |
+| [`path.delimiter`](#pathdelimiter)                      | فاصل متغيرات البيئة              | دائمًا     |
+| [`path.win32`](#pathwin32) / [`path.posix`](#pathposix) | دوال خاصة بكل نظام               | دائمًا     |
+| [`path.toNamespacedPath`](#pathtonamespacedpathpath)    | تحويل لمسار namespaced (Windows) | v9.0.0     |
 
 ---
 
-## شرح الدوال الأساسية
+## مخطط مرئي (Mermaid) لتدفق معالجة المسارات
+
+```mermaid
+graph TD;
+  A[مسار خام] --> B[path.normalize]
+  B --> C[path.isAbsolute]
+  C -- نعم --> D[path.parse]
+  C -- لا --> E[path.resolve]
+  D --> F[path.format]
+  E --> D
+```
+
+---
+
+## شرح الدوال الأساسية والموسعة
 
 ### path.basename(path[, suffix])
 
@@ -38,8 +55,6 @@
 ```js
 console.log(path.basename("/tmp/file.txt")); // file.txt
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_basename_path_ext)
 
 ---
 
@@ -53,8 +68,6 @@ console.log(path.basename("/tmp/file.txt")); // file.txt
 console.log(path.dirname("/tmp/file.txt")); // /tmp
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_dirname_path)
-
 ---
 
 ### path.extname(path)
@@ -66,8 +79,6 @@ console.log(path.dirname("/tmp/file.txt")); // /tmp
 ```js
 console.log(path.extname("index.html")); // .html
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_extname_path)
 
 ---
 
@@ -81,8 +92,6 @@ console.log(path.extname("index.html")); // .html
 console.log(path.join("/tmp", "folder", "file.txt")); // /tmp/folder/file.txt
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_join_paths)
-
 ---
 
 ### path.resolve(...paths)
@@ -94,8 +103,6 @@ console.log(path.join("/tmp", "folder", "file.txt")); // /tmp/folder/file.txt
 ```js
 console.log(path.resolve("folder", "file.txt"));
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_resolve_paths)
 
 ---
 
@@ -109,8 +116,6 @@ console.log(path.resolve("folder", "file.txt"));
 console.log(path.isAbsolute("/tmp/file.txt")); // true
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_isabsolute_path)
-
 ---
 
 ### path.normalize(path)
@@ -122,8 +127,6 @@ console.log(path.isAbsolute("/tmp/file.txt")); // true
 ```js
 console.log(path.normalize("/tmp//folder/../file.txt")); // /tmp/file.txt
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_normalize_path)
 
 ---
 
@@ -137,8 +140,6 @@ console.log(path.normalize("/tmp//folder/../file.txt")); // /tmp/file.txt
 console.log(path.parse("/tmp/file.txt"));
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_parse_path)
-
 ---
 
 ### path.format(pathObject)
@@ -150,8 +151,6 @@ console.log(path.parse("/tmp/file.txt"));
 ```js
 console.log(path.format({ dir: "/tmp", name: "file", ext: ".txt" }));
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_format_pathobject)
 
 ---
 
@@ -166,8 +165,6 @@ console.log(path.format({ dir: "/tmp", name: "file", ext: ".txt" }));
 console.log(path.relative("/data", "/data/app/file.js")); // app/file.js
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_relative_from_to)
-
 ---
 
 ### path.sep
@@ -176,10 +173,8 @@ console.log(path.relative("/data", "/data/app/file.js")); // app/file.js
 - **مثال:**
 
 ```js
-console.log(path.sep); // على ويندوز: \\، على لينكس: /
+console.log(path.sep); // على ويندوز: \\, على لينكس: /
 ```
-
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_sep)
 
 ---
 
@@ -192,55 +187,83 @@ console.log(path.sep); // على ويندوز: \\، على لينكس: /
 console.log(path.delimiter); // ; على ويندوز، : على لينكس
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_delimiter)
-
 ---
 
 ### path.win32 / path.posix
 
-- **الوصف**: دوال path خاصة بكل نظام (للحصول على نتائج ثابتة)
+- **الوصف**: دوال خاصة بكل نظام (Windows أو POSIX)
 - **مثال:**
 
 ```js
-console.log(path.win32.basename("C:\\temp\\myfile.html"));
-console.log(path.posix.basename("/tmp/myfile.html"));
+console.log(path.win32.basename("C:\\temp\\file.txt"));
+console.log(path.posix.basename("/tmp/file.txt"));
 ```
 
-[توثيق رسمي](https://nodejs.org/docs/latest/api/path.html#path_path_win32)
+---
+
+### path.toNamespacedPath(path)
+
+- **الوصف**: تحويل لمسار namespaced (Windows فقط)
+- **مثال:**
+
+```js
+console.log(path.toNamespacedPath("C:\\foo"));
+```
+
+---
+
+## مقارنة بين بعض الدوال المتشابهة
+
+| الدالة           | متى تستخدمها؟                        |
+| ---------------- | ------------------------------------ |
+| `path.join`      | لدمج أجزاء لمسار واحد                |
+| `path.resolve`   | لتحويل أجزاء لمسار مطلق              |
+| `path.normalize` | لتصحيح المسار وإزالة الفواصل الزائدة |
+| `path.parse`     | لتحليل المسار إلى كائن               |
+| `path.format`    | لبناء مسار من كائن                   |
 
 ---
 
 ## حالات الاستخدام الشائعة
 
-- توليد مسارات ملفات مؤقتة أو ديناميكية
-- استخراج اسم الملف أو الامتداد من مسار
-- بناء مسارات متوافقة مع النظام
-- التحقق من المسارات المطلقة
-- دعم أنظمة Windows وLinux في نفس الكود
+- بناء مسارات ديناميكية عبر الأنظمة
+- استخراج اسم الملف أو الامتداد
+- التحقق من صحة المسارات
+- تحويل المسارات بين Windows وPOSIX
+- التعامل مع متغيرات البيئة المرتبطة بالمسارات
 
 ---
 
 ## أفضل الممارسات
 
-- استخدم join وresolve دائمًا لبناء المسارات
-- استعمل parse وformat لتحليل أو بناء مسارات معقدة
-- استخدم path.sep وpath.delimiter عند التعامل مع متغيرات البيئة
-- تحقق من صحة المسارات القادمة من المستخدمين
-- استخدم win32/posix إذا كنت تحتاج نتائج ثابتة
+- استخدم path.join أو path.resolve بدل التلاعب اليدوي بالنصوص
+- تحقق من المسارات قبل استخدامها في عمليات حساسة
+- استخدم path.posix أو path.win32 عند الحاجة لدعم نظام معين
+- تعامل مع الأخطاء عند معالجة المسارات
 
 ---
 
 ## التحذيرات الأمنية
 
-- لا تثق في المسارات القادمة من المستخدمين، تحقق منها قبل استخدامها في عمليات حساسة
-- تجنب دمج المسارات يدويًا لتفادي أخطاء الفواصل
+- لا تثق في المسارات القادمة من المستخدمين
+- تحقق من أن المسار لا يخرج عن حدود المجلد المسموح (path traversal)
+- لا تعرض المسارات الحساسة في السجلات
 
 ---
 
 ## أدوات التصحيح المتعلقة
 
 - [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
-- [path-exists](https://www.npmjs.com/package/path-exists) (للتحقق من وجود المسار)
+- [upath](https://www.npmjs.com/package/upath) (توحيد المسارات)
+- [path-exists](https://www.npmjs.com/package/path-exists) (التحقق من وجود المسار)
+
+---
+
+## توافق الإصدارات
+
+- معظم الدوال الأساسية متوفرة منذ الإصدارات الأولى
+- بعض الدوال مثل toNamespacedPath متوفرة في الإصدارات الحديثة فقط
+- راجع [توثيق Node.js الرسمي - path](https://nodejs.org/docs/latest/api/path.html) لأي تحديثات
 
 ---
 
@@ -249,10 +272,14 @@ console.log(path.posix.basename("/tmp/myfile.html"));
 ```js
 const test = require("node:test");
 const assert = require("node:assert");
-const path = require("path");
+const path = require("node:path");
 
-test("اختبار path.join", () => {
-  assert.strictEqual(path.join("dir", "sub", "file.txt"), "dir/sub/file.txt");
+test("اختبار join", () => {
+  assert.strictEqual(path.join("/a", "b", "c.txt"), "/a/b/c.txt");
+});
+
+test("اختبار extname", () => {
+  assert.strictEqual(path.extname("index.html"), ".html");
 });
 ```
 
@@ -260,14 +287,13 @@ test("اختبار path.join", () => {
 
 ## نصائح الخبراء
 
-- استخدم always join/resolve بدل التلاعب اليدوي بالنصوص
-- استعمل parse/format مع المسارات المعقدة
-- تحقق من النظام عند التعامل مع مسارات خارجية
+- استخدم path.join وpath.resolve دائمًا بدل التلاعب اليدوي
+- تعامل مع المسارات النسبية والمطلقة بحذر
+- استخدم أدوات خارجية عند الحاجة لدعم أنظمة ملفات غير تقليدية
 
 ---
 
 ## ملاحظات تقنية
 
-- بعض الدوال تعطي نتائج مختلفة حسب النظام. استخدم win32/posix للثبات.
-- resolve يحول أي مسار إلى مطلق بناءً على المسار الحالي.
-- راجع [توثيق Node.js الرسمي - path](https://nodejs.org/docs/latest/api/path.html) لأي تحديثات.
+- جميع دوال path لا تتعامل فعليًا مع نظام الملفات (فقط معالجة نصية)
+- راجع [توثيق Node.js الرسمي - path](https://nodejs.org/docs/latest/api/path.html) لأي تحديثات

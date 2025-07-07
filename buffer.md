@@ -1,30 +1,41 @@
-# buffer (التعامل مع البيانات الثنائية)
+# buffer (التعامل مع البيانات الثنائية في Node.js)
 
 ## الوصف
-موديول buffer في Node.js يُستخدم للتعامل مع البيانات الثنائية (binary data) مثل الملفات، الشبكات، التشفير، وغيرها. Buffer هو مصفوفة بايتات ثابتة الطول، ويُستخدم بكثرة في عمليات القراءة/الكتابة منخفضة المستوى.
+يوفر موديول Buffer واجهة قوية للتعامل مع البيانات الثنائية (binary data) في Node.js، ويُستخدم في عمليات الملفات، الشبكات، التشفير، وبناء البروتوكولات منخفضة المستوى. Buffer هو مصفوفة بايتات ثابتة الطول، ويُستخدم بكثرة في عمليات القراءة/الكتابة منخفضة المستوى.
 
 ---
 
-## فهرس الدوال والكلاسات
+## فهرس شامل للدوال والكلاسات
+
 | الدالة/الكلاس | الوصف |
 |---------------|-------|
 | [`Buffer.alloc`](#bufferallocsize-fill-encoding) | إنشاء Buffer جديد مملوء بالأصفار |
 | [`Buffer.allocUnsafe`](#bufferallocunsafesize) | إنشاء Buffer غير مهيأ (أسرع لكن غير آمن) |
 | [`Buffer.from`](#bufferfromarray-string-buffer-encoding) | إنشاء Buffer من مصفوفة أو نص أو Buffer آخر |
+| [`Buffer.isBuffer`](#bufferisbufferobj) | التحقق هل الكائن Buffer |
+| [`Buffer.byteLength`](#bufferbytelengthstring-encoding) | حساب حجم البيانات بالبايت |
+| [`Buffer.compare`](#buffercomparebufa-bufb) | مقارنة بافرين |
+| [`Buffer.concat`](#bufferconcatlist-totallength) | دمج عدة بافرات |
+| [`Buffer.isEncoding`](#bufferisencodingencoding) | التحقق من دعم الترميز |
+| [`Buffer.poolSize`](#bufferpoolsize) | حجم تجمع الذاكرة الافتراضي |
 | [`buf.readUInt8`](#bufreaduint8offset) | قراءة قيمة من البافر |
 | [`buf.write`](#bufwritestring-offset-length-encoding) | كتابة نص في البافر |
 | [`buf.toString`](#buftostringencoding-start-end) | تحويل البافر إلى نص |
 | [`buf.slice`](#bufslicestart-end) | قص جزء من البافر (بدون نسخ) |
-| [`buf.subarray`](#bufsubarraystart-end) | نسخ جزء من البافر (مع نسخ) |
-| [`Buffer.compare`](#buffercomparebufa-bufb) | مقارنة بافرين |
-| [`Buffer.concat`](#bufferconcatlist-totallength) | دمج عدة بافرات |
-| [`buf.toJSON`](#buftojson) | تحويل البافر إلى JSON |
+| [`buf.subarray`](#bufsubarraystart-end) | جزء من البافر (بدون نسخ) |
+| [`buf.copy`](#bufcopytarget-targetstart-sourcestart-sourceend) | نسخ بيانات بين بافرات |
+| [`buf.equals`](#bufequalsotherbuffer) | مقارنة بافرين للمساواة |
 | [`buf.fill`](#buffillvalue-offset-end-encoding) | تعبئة البافر بقيمة |
-| [`buf.readInt16LE`](#bufreadint16leoffset) / [`buf.writeInt16LE`](#bufwriteint16levalue-offset) | قراءة/كتابة أعداد صحيحة وعائمة |
+| [`buf.indexOf`](#bufindexofvalue-byteoffset-encoding) | البحث عن قيمة |
+| [`buf.includes`](#bufincludesvalue-byteoffset-encoding) | التحقق من وجود قيمة |
+| [`buf.toJSON`](#buftojson) | تحويل البافر إلى JSON |
+| [`buf.readInt16LE`](#bufreadint16leoffset) / [`buf.writeInt16LE`](#bufwriteint16levalue-offset) | قراءة/كتابة أعداد صحيحة |
+| [`Buffer.Blob`](#bufferblob) | كائن Blob للبيانات الثنائية |
+| [`Buffer.SlowBuffer`](#bufferslowbuffersize) | بافر بطيء (للتوافقية فقط) |
 
 ---
 
-## شرح الدوال والكلاسات الأساسية
+## شرح الدوال والكلاسات الأساسية (أمثلة وبارامترات)
 
 ### Buffer.alloc(size[, fill[, encoding]])
 - **size**: حجم البافر بالبايت (Integer)
@@ -42,7 +53,7 @@ const buf2 = Buffer.alloc(10, 1); // 10 بايت بقيمة 1
 
 ### Buffer.allocUnsafe(size)
 - **size**: حجم البافر (Integer)
-- **الوصف**: إنشاء Buffer غير مهيأ (أسرع لكن غير آمن).
+- **الوصف**: إنشاء Buffer غير مهيأ (أسرع لكن قد يحتوي بيانات قديمة).
 - **مثال:**
 ```js
 const buf3 = Buffer.allocUnsafe(10); // قد يحتوي بيانات قديمة
@@ -64,6 +75,76 @@ const buf5 = Buffer.from('hello', 'utf8');
 const buf6 = Buffer.from(buf4);
 ```
 [توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferfromarray)
+
+---
+
+### Buffer.isBuffer(obj)
+- **obj**: الكائن المراد اختباره
+- **الوصف**: التحقق هل الكائن Buffer.
+- **مثال:**
+```js
+Buffer.isBuffer(buf4); // true
+Buffer.isBuffer({}); // false
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferisbufferobj)
+
+---
+
+### Buffer.byteLength(string[, encoding])
+- **string**: النص أو البافر
+- **encoding**: الترميز (String, افتراضي 'utf8')
+- **الوصف**: حساب حجم البيانات بالبايت.
+- **مثال:**
+```js
+Buffer.byteLength('abc'); // 3
+Buffer.byteLength('مرحبا'); // 10
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferbytelengthstring-encoding)
+
+---
+
+### Buffer.compare(bufA, bufB)
+- **bufA, bufB**: البافرين للمقارنة (Buffer)
+- **الوصف**: مقارنة بافرين (ترتيب بايتات).
+- **مثال:**
+```js
+Buffer.compare(Buffer.from('a'), Buffer.from('b')); // -1
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#buffercomparebuf1-buf2)
+
+---
+
+### Buffer.concat(list[, totalLength])
+- **list**: قائمة البافر (Array<Buffer>)
+- **totalLength**: الطول الكلي (Integer, اختياري)
+- **الوصف**: دمج عدة بافرات في بافر واحد.
+- **مثال:**
+```js
+const merged = Buffer.concat([buf4, buf5]);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferconcatlist-totallength)
+
+---
+
+### Buffer.isEncoding(encoding)
+- **encoding**: الترميز (String)
+- **الوصف**: التحقق من دعم الترميز.
+- **مثال:**
+```js
+Buffer.isEncoding('utf8'); // true
+Buffer.isEncoding('foo'); // false
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferisencodingencoding)
+
+---
+
+### Buffer.poolSize
+- **الوصف**: حجم تجمع الذاكرة الافتراضي (للاستخدام الداخلي).
+- **مثال:**
+```js
+console.log(Buffer.poolSize);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferpoolsize)
 
 ---
 
@@ -121,7 +202,7 @@ const part = buf5.slice(1, 3); // Buffer يحتوي 'el'
 ### buf.subarray([start[, end]])
 - **start**: البداية (Integer)
 - **end**: النهاية (Integer)
-- **الوصف**: نسخ جزء من البافر (مع نسخ).
+- **الوصف**: جزء من البافر (بدون نسخ فعلي).
 - **مثال:**
 ```js
 const sub = buf5.subarray(1, 3);
@@ -130,36 +211,32 @@ const sub = buf5.subarray(1, 3);
 
 ---
 
-### Buffer.compare(bufA, bufB)
-- **bufA, bufB**: البافرين للمقارنة (Buffer)
-- **الوصف**: مقارنة بافرين (ترتيب بايتات).
+### buf.copy(target[, targetStart[, sourceStart[, sourceEnd]]])
+- **target**: البافر الهدف
+- **targetStart**: بداية النسخ في الهدف
+- **sourceStart**: بداية النسخ في المصدر
+- **sourceEnd**: نهاية النسخ في المصدر
+- **الوصف**: نسخ بيانات بين بافرات.
 - **مثال:**
 ```js
-Buffer.compare(Buffer.from('a'), Buffer.from('b')); // -1
+const a = Buffer.from('abc');
+const b = Buffer.alloc(3);
+a.copy(b);
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#buffercomparebuf1-buf2)
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufcopytarget-targetstart-sourcestart-sourceend)
 
 ---
 
-### Buffer.concat(list[, totalLength])
-- **list**: قائمة البافر (Array<Buffer>)
-- **totalLength**: الطول الكلي (Integer, اختياري)
-- **الوصف**: دمج عدة بافرات في بافر واحد.
+### buf.equals(otherBuffer)
+- **otherBuffer**: البافر الآخر
+- **الوصف**: مقارنة بافرين للمساواة.
 - **مثال:**
 ```js
-const merged = Buffer.concat([buf4, buf5]);
+const a = Buffer.from('abc');
+const b = Buffer.from('abc');
+a.equals(b); // true
 ```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferconcatlist-totallength)
-
----
-
-### buf.toJSON()
-- **الوصف**: تحويل البافر إلى JSON.
-- **مثال:**
-```js
-const json = buf4.toJSON();
-```
-[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#buftojson)
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufequalsotherbuffer)
 
 ---
 
@@ -178,10 +255,46 @@ buf8.fill('a');
 
 ---
 
+### buf.indexOf(value[, byteOffset][, encoding])
+- **value**: القيمة (String | Buffer | Integer)
+- **byteOffset**: البداية (Integer)
+- **encoding**: الترميز (String)
+- **الوصف**: البحث عن قيمة في البافر.
+- **مثال:**
+```js
+const idx = Buffer.from('hello').indexOf('e'); // 1
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufindexofvalue-byteoffset-encoding)
+
+---
+
+### buf.includes(value[, byteOffset][, encoding])
+- **value**: القيمة (String | Buffer | Integer)
+- **byteOffset**: البداية (Integer)
+- **encoding**: الترميز (String)
+- **الوصف**: التحقق من وجود قيمة في البافر.
+- **مثال:**
+```js
+Buffer.from('hello').includes('ll'); // true
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufincludesvalue-byteoffset-encoding)
+
+---
+
+### buf.toJSON()
+- **الوصف**: تحويل البافر إلى JSON.
+- **مثال:**
+```js
+const json = buf4.toJSON();
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#buftojson)
+
+---
+
 ### buf.readInt16LE(offset) / buf.writeInt16LE(value, offset)
 - **offset**: الموقع (Integer)
 - **value**: القيمة (Integer)
-- **الوصف**: قراءة/كتابة أعداد صحيحة وعائمة (LE/BE)
+- **الوصف**: قراءة/كتابة أعداد صحيحة (LE/BE)
 - **مثال:**
 ```js
 const buf9 = Buffer.alloc(2);
@@ -189,6 +302,36 @@ buf9.writeInt16LE(256, 0);
 const num = buf9.readInt16LE(0); // 256
 ```
 [توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufreadint16leoffset)
+
+---
+
+### Buffer.Blob
+- **الوصف**: كائن Blob لتجميع البيانات الثنائية (جديد نسبيًا، متوافق مع Web API)
+- **مثال:**
+```js
+const blob = new Buffer.Blob([Buffer.from('hello')]);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferblob)
+
+---
+
+### Buffer.SlowBuffer(size)
+- **الوصف**: بافر بطيء (للتوافقية فقط، لا يُنصح باستخدامه)
+- **مثال:**
+```js
+const slow = Buffer.SlowBuffer(10);
+```
+[توثيق رسمي](https://nodejs.org/docs/latest/api/buffer.html#bufferslowbuffersize)
+
+---
+
+## مقارنة بين الدوال المتشابهة
+
+| المعيار            | Buffer.alloc()      | Buffer.allocUnsafe() |
+|--------------------|--------------------|----------------------|
+| الأمان             | آمن                | غير آمن              |
+| السرعة             | أبطأ               | أسرع                 |
+| الاستخدام          | افتراضي            | عند الحاجة للأداء    |
 
 ---
 
@@ -201,22 +344,40 @@ const num = buf9.readInt16LE(0); // 256
 ---
 
 ## أفضل الممارسات
-- استخدم Buffer.alloc بدلاً من Buffer.allocUnsafe للحماية من البيانات القديمة
-- تحقق دائماً من الطول قبل القراءة/الكتابة
-- حدد الترميز المناسب عند التعامل مع نصوص غير UTF-8
-- استخدم Buffer.concat عند التعامل مع بيانات متسلسلة
+- استخدم Buffer.alloc بدلاً من Buffer() أو Buffer.allocUnsafe إلا عند الحاجة للأداء العالي مع معالجة القيم.
+- تحقق من نوع البيانات قبل التحويل إلى Buffer.
+- تعامل مع الترميزات بشكل صريح (utf8, base64, ...).
+- لا تستخدم Buffer مباشرة مع مدخلات المستخدم دون تحقق.
 
 ---
 
 ## التحذيرات الأمنية
-- لا تستخدم Buffer.allocUnsafe بدون تعبئة مباشرة بعد الإنشاء
-- لا تعرض محتوى البافر مباشرة للمستخدم النهائي إذا كان يحتوي بيانات حساسة
+- لا تستخدم Buffer.allocUnsafe مع بيانات حساسة.
+- تحقق من حجم البيانات قبل الكتابة في Buffer لتجنب تجاوز السعة (buffer overflow).
+- لا تعرض محتوى Buffer مباشرة للمستخدم النهائي.
 
 ---
 
-## أدوات التصحيح المتعلقة
-- [node --inspect](https://nodejs.org/en/docs/guides/debugging-getting-started/)
-- [buffer-crc32](https://www.npmjs.com/package/buffer-crc32) (حساب CRC)
+## أدوات التصحيح
+- استخدم console.log(buffer) لمعاينة البيانات.
+- استخدم buffer.toString('hex') أو ('base64') لتحويل البيانات لتمثيل نصي.
+
+---
+
+## التوافق مع الإصدارات
+- Buffer.alloc و Buffer.from متوفرة منذ Node.js 6+
+- Buffer.Blob متوفرة منذ Node.js 15+
+- Buffer() (بدون new) مهمل منذ Node.js 6+
+
+---
+
+## مخطط Mermaid
+```mermaid
+graph TD
+  A[مصدر البيانات] -->|تحويل| B(Buffer.from)
+  B -->|معالجة| C[Buffer]
+  C -->|تحويل نصي| D(Buffer.toString)
+```
 
 ---
 
@@ -224,23 +385,29 @@ const num = buf9.readInt16LE(0); // 256
 ```js
 const test = require('node:test');
 const assert = require('node:assert');
+const { Buffer } = require('buffer');
 
-test('Buffer.alloc ينشئ بافر بالحجم الصحيح', () => {
-  const buf = Buffer.alloc(8);
-  assert.strictEqual(buf.length, 8);
+test('Buffer alloc/write/read', () => {
+  const buf = Buffer.alloc(4);
+  buf.writeUInt16LE(513, 0);
+  assert.strictEqual(buf.readUInt16LE(0), 513);
 });
 ```
 
 ---
 
-## نصائح الخبراء
-- استخدم Buffer.alloc للحماية من البيانات القديمة
-- استخدم Buffer.concat مع البيانات المتسلسلة
-- استخدم دوال القراءة/الكتابة المناسبة لنوع البيانات (LE/BE, Int/UInt)
-- استفد من Buffer في التعامل مع الملفات الثنائية أو بناء بروتوكولات خاصة
+## الأخطاء الشائعة
+- [❌] استخدام Buffer.allocUnsafe دون تعبئة → الحل: استخدم fill مباشرة بعد الإنشاء.
+- [❌] تجاوز حجم البافر عند الكتابة → الحل: تحقق من الطول قبل الكتابة.
+- [❌] استخدام Buffer() (بدون new) → الحل: استخدم Buffer.alloc أو Buffer.from.
 
 ---
 
-## ملاحظات تقنية
-- Buffer يدعم جميع دوال القراءة/الكتابة للأعداد (راجع التوثيق الرسمي)
-- راجع [توثيق Node.js الرسمي - buffer](https://nodejs.org/docs/latest/api/buffer.html) لأي تحديثات 
+## نصائح الخبراء
+- [💡] استخدم Buffer.from لتحويل النصوص أو المصفوفات إلى بيانات ثنائية.
+- [🚀] استخدم Buffer.concat لدمج عدة بافرات بكفاءة.
+- [⚠️] تعامل مع الترميزات بحذر عند التحويل بين Buffer ونصوص.
+- [💡] استخدم Buffer.isBuffer للتحقق من نوع الكائن قبل العمليات.
+- [🚀] استخدم Buffer.allocUnsafe فقط في حالات الأداء العالي ومع معالجة القيم فورًا.
+
+--- 
